@@ -1,9 +1,9 @@
 // *******************************************************************************************************************************
 // *******************************************************************************************************************************
 //
-//		Name:		processor.c
+//		Name:		sys_processor.c
 //		Purpose:	Processor Emulation.
-//		Created:	19th October 2015
+//		Created:	29th June 2016
 //		Author:		Paul Robson (paul@robsons.org.uk)
 //
 // *******************************************************************************************************************************
@@ -21,40 +21,35 @@
 //														   Timing
 // *******************************************************************************************************************************
 
-#define CRYSTAL_CLOCK 	(1789773L)													// Clock cycles per second (1.79Mhz)
-#define CYCLE_RATE 		(CRYSTAL_CLOCK/8)											// Cycles per second (8 clocks per cycle)
-#define FRAME_RATE		(60)														// Frames per second (60)
-#define CYCLES_PER_FRAME (CYCLE_RATE / FRAME_RATE)									// Cycles per frame (3,728)
+#define CYCLES_PER_SCANLINE 	(14)												// Cycles per scan line (14)
+#define NTSC_LINES_PER_FRAME	(262)												// NTSC standards
+#define NTSC_FRAMES_PER_SECOND	(60)
+
+#define CYCLES_PER_FRAME 		(CYCLES_PER_SCANLINE * NTSC_LINES_PER_FRAME)		// Cycles per frame (3,668)
+#define CYCLES_PER_SECOND 		(CYCLES_PER_FRAME * NTSC_FRAMES_PER_SECOND)			// Cycles per second (220,080)
+#define CRYSTAL_CLOCK 			(CYCLES_PER_SECOND * 8)								// Clock speed (1,760,640Hz)
+
+#define RENDERING_LINES 		(128)												// Generate video on these scanlines
+#define RENDERING_CYCLES		(RENDERING_LINES * CYCLES_PER_SCANLINE)				// How many cycles this takes.
+
 
 //	3,668 Cycles per frame
 // 	262 lines per video frame
-//	14 cycles per scanline (should be :))
+//	14 Cycles per scanline (should be :))
 
 // *******************************************************************************************************************************
 //														CPU / Memory
 // *******************************************************************************************************************************
 
-static BYTE8   	D,DF,X,P,Q,T,IE,opcode,MB;
-static WORD16   R[16],MA,LBA,cycles;
-
+#include "__1802_macros.h"
 static BYTE8 ramMemory[MEMORYSIZE];													
 
 // *******************************************************************************************************************************
-//											 Memory and I/O read and write macros.
+//											 Memory and I/O read and write macros
 // *******************************************************************************************************************************
 
-#define READ() 		_Read()															
-#define WRITE() 	_Write()
-#define READ16() 	_Read();LBA=MB;MA++;_Read();LBA = (LBA << 8)|MB
-#define FETCH() 	MA = R[P];READ();ADDRP(1)
-
-static inline void _Read(void) {
-	MB = (MA < MEMORYSIZE) ? ramMemory[MA] : DEFAULT_BUS_VALUE; 					// Reading RAM (0000 up)
-}
-
-static inline void _Write(void) {
-	if (MA < MEMORYSIZE) ramMemory[MA] = MB;
-}
+#define READ(a) 	ramMemory[(a) & MEMORYMASK]
+#define WRITE(a,d) 	ramMemory[(a) & MEMORYMASK] = d
 
 // *******************************************************************************************************************************
 //													   Port Interfaces
@@ -68,31 +63,15 @@ static inline void _Write(void) {
 #define EFLAG1() 	(1)																// EF1 is always set.
 #define EFLAG4() 	(HWIIsInPressed() != 0)											// EF4 is the IN Key.
 
-#include "__1802ports.h"															// Default connections.
-#include "__1802support.h"
-
-// *******************************************************************************************************************************
-//													  Converted code.
-// *******************************************************************************************************************************
-
-#ifdef ARDUINO
-#include <avr/pgmspace.h>
-static const BYTE8 __code[] PROGMEM = {
-	#include "__1802code.h"
-};
-#endif
+#include "__1802_ports.h"															// Default connections.
 
 // *******************************************************************************************************************************
 //														Reset the CPU
 // *******************************************************************************************************************************
 
 void CPUReset(void) {
-	HWIReset();
-	CPU1802Reset();
-	#ifdef ARDUINO
-	for (WORD16 n = 0;n < sizeof(__code);n++) 
-		ramMemory[n] = pgm_read_word_near(__code+n);
-	#endif
+	RESET();																		// CPU Reset
+	HWIReset();																		// Hardware reset
 }
 
 // *******************************************************************************************************************************
@@ -101,26 +80,22 @@ void CPUReset(void) {
 
 BYTE8 CPUExecuteInstruction(void) {
 
-	FETCH();opcode = MB;															// Read the opcode
-	pReg = &(R[opcode & 0x0F]);														// Set up the current register pointer.
-
-	switch(opcode) {																// Execute it.
-		#include "__1802opcodes.h"
+	switch(FETCH()) {																// Execute it.
+		#include "__1802_opcodes.h"
 	}
-	if (cycles >= CYCLES_PER_FRAME-29) {											// If we are at INT time.
+	if (Cycles >= CYCLES_PER_FRAME-29) {											// If we are at INT time.
 		if (IE != 0) {																// and interrupts are enabled
-			CPU1802Interrupt();														// Fire an interrupt
-			cycles = CYCLES_PER_FRAME - 29;											// Make it EXACTLY 29 cycles to display start
+			INTERRUPT();
+			Cycles = CYCLES_PER_FRAME - 29;											// Make it EXACTLY 29 Cycles to display start
 																					// When breaks on FRAME_RATE then will be at render
 		}
 	}	
-	if (cycles < CYCLES_PER_FRAME) return 0;										// Not completed a frame.
-	BYTE8 *ptr = NULL;																// NULL if R[0] is a bad pointer.							
-	if (R[0] <= MEMORYSIZE-256) ptr = ramMemory+R[0];								// If in memory range, get pointer
-	HWISetPageAddress(R[0],ptr);													// Set the display address.
+	if (Cycles < CYCLES_PER_FRAME) return 0;										// Not completed a frame.
+	HWISetPageAddress(R[0]);														// Set the display address.
 	HWIEndFrame();																	// End of Frame code
-	cycles = cycles - CYCLES_PER_FRAME;												// Adjust this frame rate.
-	return FRAME_RATE;																// Return frame rate.
+	Cycles = Cycles - CYCLES_PER_FRAME;												// Adjust this frame rate.
+	Cycles = Cycles + RENDERING_CYCLES;												// Fix it back for the video generation.
+	return NTSC_FRAMES_PER_SECOND;													// Return frame rate.
 }
 
 #ifdef INCLUDE_DEBUGGING_SUPPORT
@@ -152,16 +127,11 @@ WORD16 CPUGetStepOverBreakpoint(void) {
 // *******************************************************************************************************************************
 
 BYTE8 CPUReadMemory(WORD16 address) {
-	BYTE8 _MB = MB;WORD16 _MA = MA;BYTE8 result;
-	MA = address;READ();result = MB;
-	MB = _MB;MA = _MA;
-	return result;
+	return READ(address);
 }
 
 void CPUWriteMemory(WORD16 address,BYTE8 data) {
-	BYTE8 _MB = MB;WORD16 _MA = MA;
-	MA = address;MB = data;WRITE();
-	MB = _MB;MA = _MA;
+	WRITE(address,data);
 }
 
 // *******************************************************************************************************************************
@@ -185,7 +155,7 @@ static CPUSTATUS s;																	// Status area
 CPUSTATUS *CPUGetStatus(void) {
 	s.d = D;s.df = DF;s.p = P;s.x = X;s.t = T;s.q = Q;s.ie = IE;					// Registers
 	for (int i = 0;i < 16;i++) s.r[i] = R[i];										// 16 bit Registers
-	s.cycles = cycles;s.pc = R[P];													// Cycles and "PC"
+	s.cycles = Cycles;s.pc = R[P];													// Cycles and "PC"
 	return &s;
 }
 

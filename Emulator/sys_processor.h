@@ -1,9 +1,9 @@
 // *******************************************************************************************************************************
 // *******************************************************************************************************************************
 //
-//		Name:		processor.h
+//		Name:		sys_processor.h
 //		Purpose:	Processor Emulation (header)
-//		Created:	19th October 2015
+//		Created:	29th June 2016
 //		Author:		Paul Robson (paul@robsons.org.uk)
 //
 // *******************************************************************************************************************************
@@ -12,12 +12,13 @@
 #ifndef _PROCESSOR_H
 #define _PROCESSOR_H
 
-#define MEMORYSIZE	(1024) 															// RAM allocated.
+#define MEMORYSIZE	(4096) 															// RAM allocated.
+#define MEMORYMASK	(MEMORYSIZE-1)													// Address mask.
+
+#define DEFAULT_BUS_VALUE (0)														// Default bus values I/O
 
 typedef unsigned short WORD16;														// 8 and 16 bit types.
 typedef unsigned char  BYTE8;
-
-#define DEFAULT_BUS_VALUE (0x00)													// What's on the bus if it's not memory.
 
 void CPUReset(void);
 BYTE8 CPUExecuteInstruction(void);

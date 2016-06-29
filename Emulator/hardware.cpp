@@ -3,7 +3,7 @@
 //
 //		Name:		hardware.cpp
 //		Purpose:	Hardware Interface
-//		Created:	19th October 2015
+//		Created:	26th June 2016
 //		Author:		Paul Robson (paul@robsons.org.uk)
 //
 // *******************************************************************************************************************************
@@ -21,45 +21,18 @@ static WORD16 videoMemoryAddress = 0xFFFF;										// 1802 Video Memory Address
 static BYTE8  screenIsOn = 0;													// 1861 turned on
 static BYTE8  keypadLatch = 0;													// 74922 keyboard latch (Elf)
 static BYTE8  ledDisplay = 0;													// 8 LED / 2 Digit display (Elf)
-static BYTE8  *videoMemoryPointer;												// Physical screen memory ptr in SRAM
-
-#ifdef ARDUINO
-#include "SSD1306_OLED.h"														// Header for SPI LED driver
-#include "Keypad.h"
-
-static SSD1306ElfDisplay oLedDisplay(1);										// Create/initialise SSD1306
-static BYTE8 displayingLEDS;													// True when SSD1306 displaying LED not Video
-
-static const char keys[4][4] = {
-  {'1','2','3','A'},
-  {'4','5','6','B'},
-  {'7','8','9','C'},
-  {'E','0','F','D'}
-};
-
-static byte rowPins[4] = {4,5,6,7}; 
-static byte colPins[4] = { 8,9,2,3}; 
-static Keypad keypad = Keypad( makeKeymap(keys), rowPins, colPins, 4,4 );
-
-#endif
 
 // *******************************************************************************************************************************
 //													Hardware Reset
 // *******************************************************************************************************************************
 
 void HWIReset(void) {
-	#ifdef ARDUINO
-	oLedDisplay.init();															// Initialise SSD1306
-	oLedDisplay.clear();
-	HWISetDigitDisplay(0);														// Clear binary display
-	#endif
 }
 
 // *******************************************************************************************************************************
 //											Process keys passed from debugger
 // *******************************************************************************************************************************
 
-#ifdef WINDOWS
 BYTE8 HWIProcessKey(BYTE8 key,BYTE8 isRunMode) {
 	if (isRunMode) {															// In run mode, push 0-9 A-F
 		if (key >= '0' && key <= '9') 											// into keyboard latch.
@@ -69,7 +42,6 @@ BYTE8 HWIProcessKey(BYTE8 key,BYTE8 isRunMode) {
 	}
 	return key;
 }
-#endif
 
 // *******************************************************************************************************************************
 //									Get/Set the 7 Segment Display And/Or LEDs
@@ -77,11 +49,6 @@ BYTE8 HWIProcessKey(BYTE8 key,BYTE8 isRunMode) {
 
 void HWISetDigitDisplay(BYTE8 led) {
 	ledDisplay = led;
-	#ifdef ARDUINO
-	if (displayingLEDS == 0) oLedDisplay.clear();
-	//oLedDisplay.displayBinary(led);
-	displayingLEDS = 1;
-	#endif	
 }
 
 BYTE8 HWIGetDigitDisplay(void) {
@@ -92,9 +59,8 @@ BYTE8 HWIGetDigitDisplay(void) {
 //							Get/Set the page address (1802 and Physical) for the video.
 // *******************************************************************************************************************************
 
-void HWISetPageAddress(WORD16 r0,BYTE8 *pointer) {
+void HWISetPageAddress(WORD16 r0) {
 	videoMemoryAddress = r0;
-	videoMemoryPointer = pointer;
 }
 
 WORD16 HWIGetPageAddress(void) {
@@ -117,11 +83,7 @@ BYTE8 HWIGetScreenOn(void) {
 // *******************************************************************************************************************************
 
 BYTE8 HWIIsInPressed(void) {
-	#ifdef WINDOWS
 	return (GFXIsKeyPressed(GFXKEY_RETURN) != 0);
-	#else
-	return 0;
-	#endif
 }
 
 // *******************************************************************************************************************************
@@ -137,19 +99,4 @@ BYTE8 HWIReadKeypadLatch(void) {
 // *******************************************************************************************************************************
 
 void HWIEndFrame(void) {
-	#ifdef ARDUINO
-	if (screenIsOn && videoMemoryPointer != NULL) {								// Screen on and video memory assigned
-		if (displayingLEDS) oLedDisplay.clear();								// Clear if displaying LEDs
-		displayingLEDS = 0;														// Clear that flag.
-		oLedDisplay.refresh(videoMemoryPointer);								// Refresh the screen
-	}
-	BYTE8 key = keypad.getKey();												// Check for key
-	if (key != 0) {
-		oLedDisplay.displayBinary(key);
-		if (key >= '0' && key <= '9') 											// into keyboard latch.
-			keypadLatch = (keypadLatch << 4) | (key - '0');
-		if (key >= 'A' && key <= 'F')
-			keypadLatch = (keypadLatch << 4) | (key - 'A' + 10);
-	}
-	#endif
 }

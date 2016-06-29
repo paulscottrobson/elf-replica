@@ -3,7 +3,7 @@
 //
 //		Name:		sys_debug_elf.c
 //		Purpose:	Debugger Code (System Dependent)
-//		Created:	19th October 2015
+//		Created:	26th June 2016
 //		Author:		Paul Robson (paul@robsons->org.uk)
 //
 // *******************************************************************************************************************************
@@ -18,7 +18,9 @@
 #include "debugger.h"
 #include "hardware.h"
 
-#include "__1802mnemonics.h"
+static const char *_mnemonics[256] = {
+	#include "__1802_mnemonics.h"
+};
 
 #define DBGC_ADDRESS 	(0x0F0)														// Colour scheme.
 #define DBGC_DATA 		(0x0FF)														// (Background is in main.c)
@@ -30,7 +32,7 @@
 
 static const char *labels[] = { "D","DF","P","X","T","Q","IE","RP","RX","CY","BP", NULL };
 
-void DBGXRender(int *address) {
+void DBGXRender(int *address,int runMode) {
 	int n = 0;
 	char buffer[32];
 	CPUSTATUS *s = CPUGetStatus();
@@ -71,7 +73,7 @@ void DBGXRender(int *address) {
 		opc = CPUReadMemory(p);p = (p + 1) & 0xFFFF;								// Read opcode.
 		strcpy(buffer,_mnemonics[opc]);												// Work out the opcode.
 		char *at = buffer+strlen(buffer)-2;											// 2nd char from end
-		if (*at == '@') {															// Operand ?
+		if (*at == '.') {															// Operand ?
 			if (at[1] == '1') {
 				sprintf(at,"%02x",CPUReadMemory(p));
 				p = (p+1) & 0xFFFF;
@@ -89,6 +91,11 @@ void DBGXRender(int *address) {
 	p = HWIGetPageAddress();														// wherever the screen is, it's now in R0.
 	SDL_Rect rc;rc.x = _GFXX(21);rc.y = _GFXY(1)/2;									// Whole rectangle.
 	rc.w = 10 * GRIDSIZE * 6;rc.h = 6 *GRIDSIZE * 8; 										
+	if (runMode) {
+		rc.w = 30 * GRIDSIZE * 6;rc.h = 13 * GRIDSIZE * 8;
+		rc.x = WIN_WIDTH / 2 - rc.w/2;
+		rc.y = WIN_HEIGHT - 32 - rc.h;
+	}
 	rc.w = rc.w/64*64;rc.h = rc.h/32*32;											// Make it /64 /32
 	SDL_Rect rcPixel;rcPixel.h = rc.h/32;rcPixel.w = rc.w / 64;						// Pixel rectangle.
 	GFXRectangle(&rc,0x0);															// Fill it black
