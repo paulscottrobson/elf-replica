@@ -2,9 +2,9 @@
 	cpu 	1802
 
 
-display = 00Fh
-map = 00Eh
-stack = 00Dh
+display = 00Fh																	; this page has the display in it
+map = 00Eh 																		; this page has the map in it.
+stack = 00Dh 																	; this page has the stack in it.
 
 r0 = 0
 r1 = 1
@@ -35,6 +35,10 @@ rf = 15
 	phi 	r1
 	ldi 	Interrupt & 255
 	plo 	r1
+
+	sex 	r2
+	inp		1
+
 	sep 	r3
 
 Return:
@@ -74,8 +78,6 @@ Refresh:
 	org 	0100h
 
 Main:
-	sex 	r2
-	inp		1
 
 ; ************************************************************************************************************
 ; ************************************************************************************************************
@@ -188,8 +190,6 @@ MirrorLoop:
 	shlc 	
 	bnf 	MirrorLoop
 
-	inc 	15
-	br 		RepaintDisplay
 wait:
 	br 		wait
 	

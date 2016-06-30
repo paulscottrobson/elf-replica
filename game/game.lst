@@ -1,0 +1,362 @@
+ AS V1.42 Beta [Bld 102] - source file game.asm - page 1 - 6/30/2016 13:01:08
+
+
+       1/       0 :                     
+       2/       0 :                     	include 1802.inc
+(1)    1/       0 :                     ; ************************************************************************************************************
+(1)    2/       0 :                     ; ************************************************************************************************************
+(1)    3/       0 :                     ;
+(1)    4/       0 :                     ;												1802 Generic Routines
+(1)    5/       0 :                     ;
+(1)    6/       0 :                     ; ************************************************************************************************************
+(1)    7/       0 :                     ; ************************************************************************************************************
+(1)    8/       0 :                     
+(1)    9/       0 :                     	cpu 	1802
+(1)   10/       0 :                     
+(1)   11/       0 : =0H                 r0 = 0 																			; register names
+(1)   12/       0 : =1H                 r1 = 1
+(1)   13/       0 : =2H                 r2 = 2
+(1)   14/       0 : =3H                 r3 = 3
+(1)   15/       0 : =4H                 r4 = 4
+(1)   16/       0 : =5H                 r5 = 5
+(1)   17/       0 : =6H                 r6 = 6
+(1)   18/       0 : =7H                 r7 = 7
+(1)   19/       0 : =8H                 r8 = 8
+(1)   20/       0 : =9H                 r9 = 9
+(1)   21/       0 : =AH                 ra = 10
+(1)   22/       0 : =BH                 rb = 11
+(1)   23/       0 : =CH                 rc = 12
+(1)   24/       0 : =DH                 rd = 13
+(1)   25/       0 : =EH                 re = 14
+(1)   26/       0 : =FH                 rf = 15
+(1)   27/       0 :                     
+(1)   28/       0 :                     lri Macro 	reg,address 														; load constant into 16 bit reg
+(1)   29/       0 :                     	ldi 	(address)/256
+(1)   30/       0 :                     	phi 	reg
+(1)   31/       0 :                     	ldi 	(address)&255
+(1)   32/       0 :                     	plo 	reg
+(1)   33/       0 :                     	endm
+(1)   34/       0 :                     
+(1)   35/       0 :                     call Macro 	reg,address 														; call routine via mark.
+(1)   36/       0 :                     	lri 	reg,address
+(1)   37/       0 :                     	mark
+(1)   38/       0 :                     	sep 	reg
+(1)   39/       0 :                     	dec 	r2
+(1)   40/       0 :                     	endm
+(1)   41/       0 :                     
+(1)   42/       0 :                     return Macro 																	; return from routine
+(1)   43/       0 :                     	sex 	r2
+(1)   44/       0 :                     	inc 	r2
+(1)   45/       0 :                     	ret
+(1)   46/       0 :                     	endm
+(1)   47/       0 :                     
+(1)   48/       0 :                     
+       3/       0 :                     
+       4/       0 : =F00H               display = 	0F00h																; this page has the display in it
+       5/       0 : =E00H               map = 		0E00h 																; this page has the map in it.
+       6/       0 : =DFFH               stack = 	0DFFh 																; stack top
+       7/       0 :                     
+       8/       0 : 70                  	ret 																		; 1802 interrupts on. 
+       9/       1 : (MACRO)             	lri 	r1,Interrupt 														; set interrupt vector
+       9/       1 : F8 00                       ldi     (INTERRUPT)/256
+       9/       3 : B1                          phi     R1
+       9/       4 : F8 29                       ldi     (INTERRUPT)&255
+ AS V1.42 Beta [Bld 102] - source file game.asm - page 2 - 6/30/2016 13:01:08
+
+
+       9/       6 : A1                          plo     R1
+      10/       7 : (MACRO)             	lri 	r2,Stack 															; set stack address
+      10/       7 : F8 0D                       ldi     (STACK)/256
+      10/       9 : B2                          phi     R2
+      10/       A : F8 FF                       ldi     (STACK)&255
+      10/       C : A2                          plo     R2
+      11/       D : F8 11               	ldi 	Main & 255 															; switch to R3 as program pointer
+      12/       F : A3                  	plo 	r3
+      13/      10 : D3                  	sep 	r3 																	; go to main routine
+      14/      11 :                     Main:
+      15/      11 : E2                  	sex 	r2 																	; turn video on
+      16/      12 : 69                  	inp		1
+      17/      13 :                     
+      18/      13 : (MACRO)             	call 	r4,RepaintDisplay 													; clear screen and draw walls
+      18/      13 :  (MACRO-2)                  lri     R4,REPAINTDISPLAY
+      18/      13 : F8 00                       ldi     (REPAINTDISPLAY)/256
+      18/      15 : B4                          phi     R4
+      18/      16 : F8 45                       ldi     (REPAINTDISPLAY)&255
+      18/      18 : A4                          plo     R4
+      18/      19 : 79                          mark
+      18/      1A : D4                          sep     R4
+      18/      1B : 22                          dec     r2
+      19/      1C :                     	; Open doors
+      20/      1C : (MACRO)             	call 	r4,MirrorDisplay
+      20/      1C :  (MACRO-2)                  lri     R4,MIRRORDISPLAY
+      20/      1C : F8 00                       ldi     (MIRRORDISPLAY)/256
+      20/      1E : B4                          phi     R4
+      20/      1F : F8 94                       ldi     (MIRRORDISPLAY)&255
+      20/      21 : A4                          plo     R4
+      20/      22 : 79                          mark
+      20/      23 : D4                          sep     R4
+      20/      24 : 22                          dec     r2
+      21/      25 :                     	; draw princess
+      22/      25 :                     	; draw status.
+      23/      25 :                     
+      24/      25 :                     wait:
+      25/      25 : 30 25               	br 		wait
+      26/      27 :                     
+      27/      27 :                     	include interrupt.asm														; screen driver
+(1)    1/      27 :                     ; ************************************************************************************************************
+(1)    2/      27 :                     ; ************************************************************************************************************
+(1)    3/      27 :                     ;
+(1)    4/      27 :                     ;											1861 Display Routine
+(1)    5/      27 :                     ;
+(1)    6/      27 :                     ; ************************************************************************************************************
+(1)    7/      27 :                     ; ************************************************************************************************************
+(1)    8/      27 :                     
+(1)    9/      27 :                     Return:
+(1)   10/      27 : 72                  	ldxa 																		; restore D
+(1)   11/      28 : 70                  	ret 																		; restore X,P
+(1)   12/      29 :                     Interrupt:
+(1)   13/      29 : 22                  	dec 	r2 																	; save return XP on stack
+(1)   14/      2A : 78                  	sav
+(1)   15/      2B : 22                  	dec 	r2 																	; save D on stack
+(1)   16/      2C : 52                  	str 	r2
+(1)   17/      2D : C4                  	nop 																		; pad out cycles till rendering
+(1)   18/      2E : C4                  	nop
+(1)   19/      2F : C4                  	nop
+(1)   20/      30 : (MACRO)             	lri 	r0,display 															; draw from here
+(1)   20/      30 : F8 0F                       ldi     (DISPLAY)/256
+ AS V1.42 Beta [Bld 102] - source file game.asm(interrupt.asm) - page 3 - 6/30/2016 13:01:08
+
+
+(1)   20/      32 : B0                          phi     R0
+(1)   20/      33 : F8 00                       ldi     (DISPLAY)&255
+(1)   20/      35 : A0                          plo     R0
+(1)   21/      36 :                     Refresh:
+(1)   22/      36 : 80                  	glo 	r0 																	; do four scan lines for each row
+(1)   23/      37 : E2                  	sex 	r2
+(1)   24/      38 :                     
+(1)   25/      38 : E2                  	sex 	r2
+(1)   26/      39 : 20                  	dec 	r0
+(1)   27/      3A : A0                  	plo 	r0
+(1)   28/      3B :                     
+(1)   29/      3B : E2                  	sex 	r2
+(1)   30/      3C : 20                  	dec 	r0
+(1)   31/      3D : A0                  	plo 	r0
+(1)   32/      3E :                     
+(1)   33/      3E : E2                  	sex 	r2
+(1)   34/      3F : 20                  	dec 	r0
+(1)   35/      40 : A0                  	plo 	r0
+(1)   36/      41 :                     
+(1)   37/      41 : 3C 36               	bn1 	Refresh 															; in emulator we never loop back
+(1)   38/      43 : 30 27               	br 		Return
+(1)   39/      45 :                     
+      28/      45 :                     	include repaint.asm 														; repaint outline and mirror code
+(1)    1/      45 :                     ; ************************************************************************************************************
+(1)    2/      45 :                     ; ************************************************************************************************************
+(1)    3/      45 :                     ;
+(1)    4/      45 :                     ;						 	Draw the Outline Frame (with no doors) - top half only.
+(1)    5/      45 :                     ;
+(1)    6/      45 :                     ;	Uses RC,RD,RE,RF
+(1)    7/      45 :                     ; ************************************************************************************************************
+(1)    8/      45 :                     ; ************************************************************************************************************
+(1)    9/      45 :                     
+(1)   10/      45 :                     RepaintDisplay:
+(1)   11/      45 : F8 0F               	ldi 	display/256 														; rc points to display position.
+(1)   12/      47 : BC                  	phi 	rc 																	; so does rd as we're going to clear it
+(1)   13/      48 : BD                  	phi 	rd 																	; the top half of the screen
+(1)   14/      49 : F8 00               	ldi 	0
+(1)   15/      4B : AC                  	plo 	rc
+(1)   16/      4C : AD                  	plo 	rd
+(1)   17/      4D :                     _RDClear:
+(1)   18/      4D : 8C                  	glo 	rc 																	; rc.0 is zero
+(1)   19/      4E : 5D                  	str 	rd 																	; fill display RAM with it.
+(1)   20/      4F : 1D                  	inc 	rd
+(1)   21/      50 : 8D                  	glo 	rd
+(1)   22/      51 : 7E                  	shlc 																		; only do it half way as we copy
+(1)   23/      52 : 3B 4D               	bnf 	_RDClear 															; the bottom half.
+(1)   24/      54 :                     
+(1)   25/      54 :                     ; ************************************************************************************************************
+(1)   26/      54 :                     ;									    Come back here to reset the masks
+(1)   27/      54 :                     ; ************************************************************************************************************
+(1)   28/      54 :                     
+(1)   29/      54 :                     _RDResetMasks:
+(1)   30/      54 : F8 C0               	ldi 	0C0h 																; rf.0 is 11000000 (left write)
+(1)   31/      56 : AF                  	plo 	rf
+(1)   32/      57 : F8 03               	ldi 	3 																	; rf.1 is 00000011 (right write)
+(1)   33/      59 : BF                  	phi 	rf
+(1)   34/      5A :                     
+(1)   35/      5A :                     ; ************************************************************************************************************
+(1)   36/      5A :                     ;				Main repaint loop. rc points to the line position. rf.0 left mask rf.1 right mask
+(1)   37/      5A :                     ; ************************************************************************************************************
+ AS V1.42 Beta [Bld 102] - source file game.asm(repaint.asm) - page 4 - 6/30/2016 13:01:08
+
+
+(1)   38/      5A :                     
+(1)   39/      5A :                     _RDLoop:
+(1)   40/      5A : 9C                  	ghi		rc 																	; copy rc.1 to rd.1 and re.1
+(1)   41/      5B : BD                  	phi 	rd 																	
+(1)   42/      5C : BE                  	phi 	re
+(1)   43/      5D : 8C                  	glo 	rc 																	; are there no solid blocks yet ?
+(1)   44/      5E : FA 07               	ani 	7
+(1)   45/      60 : 32 73               	bz 		_RDNoSolid
+(1)   46/      62 :                     
+(1)   47/      62 :                     ; ************************************************************************************************************
+(1)   48/      62 :                     ;					This draws solid blocks - fill in a whole byte at a time, on left and right
+(1)   49/      62 :                     ; ************************************************************************************************************
+(1)   50/      62 :                     
+(1)   51/      62 : 8C                  	glo 	rc 																	; rd.0 will point to left bit
+(1)   52/      63 : AD                  	plo 	rd
+(1)   53/      64 : FB 07               	xri 	7																	; rd.1 will point to right bit
+(1)   54/      66 : AE                  	plo 	re																	
+(1)   55/      67 : 2D                  	dec 	rd
+(1)   56/      68 :                     
+(1)   57/      68 :                     _RDDrawByteBlocks:
+(1)   58/      68 : F8 FF               	ldi 	0FFh 																; write solid block on left.
+(1)   59/      6A : 5D                  	str 	rd
+(1)   60/      6B : 5E                  	str 	re
+(1)   61/      6C : 2D                  	dec 	rd 																	; move left left and right right
+(1)   62/      6D : 1E                  	inc 	re
+(1)   63/      6E : 8E                  	glo 	re 																	; if right hasn't wrapped around
+(1)   64/      6F : FA 07               	ani 	7
+(1)   65/      71 : 3A 68               	bnz 	_RDDrawByteBlocks
+(1)   66/      73 :                     _RDNoSolid:
+(1)   67/      73 :                     
+(1)   68/      73 :                     ; ************************************************************************************************************
+(1)   69/      73 :                     ;						This writes out the current masks and goes to the next line.
+(1)   70/      73 :                     ; ************************************************************************************************************
+(1)   71/      73 :                     
+(1)   72/      73 : 8C                  	glo 	rc 																	; set rd and re to point to write
+(1)   73/      74 : AD                  	plo 	rd
+(1)   74/      75 : FB 07               	xri 	7
+(1)   75/      77 : AE                  	plo 	re
+(1)   76/      78 :                     
+(1)   77/      78 : 8C                  	glo 	rc 																	; point rc to the next line.
+(1)   78/      79 : FC 08               	adi 	8
+(1)   79/      7B : AC                  	plo 	rc
+(1)   80/      7C :                     
+(1)   81/      7C : 8F                  	glo 	rf																	; write left mask
+(1)   82/      7D : 5D                  	str 	rd
+(1)   83/      7E : 76                  	shrc 																		; update the left mask.
+(1)   84/      7F : 76                  	shrc	
+(1)   85/      80 : F9 C0               	ori 	0C0h
+(1)   86/      82 : AF                  	plo 	rf
+(1)   87/      83 :                     
+(1)   88/      83 : 9F                  	ghi 	rf 																	; write right mask
+(1)   89/      84 : 5E                  	str 	re
+(1)   90/      85 : 7E                  	shlc 																		; update the right mask.
+(1)   91/      86 : 7E                  	shlc 
+(1)   92/      87 : F9 03               	ori 	3
+(1)   93/      89 : BF                  	phi	 	rf
+(1)   94/      8A :                     
+(1)   95/      8A : 3B 5A               	bnf 	_RDLoop
+(1)   96/      8C : 1C                  	inc 	rc 																	; step out 1.
+(1)   97/      8D : 8C                  	glo 	rc 																	; if not half way down loop back.
+ AS V1.42 Beta [Bld 102] - source file game.asm(repaint.asm) - page 5 - 6/30/2016 13:01:08
+
+
+(1)   98/      8E : 7E                  	shlc
+(1)   99/      8F : 3B 54               	bnf 	_RDResetMasks
+(1)  100/      91 : (MACRO)             	return
+(1)  100/      91 : E2                          sex     r2
+(1)  100/      92 : 12                          inc     r2
+(1)  100/      93 : 70                          ret
+(1)  101/      94 :                     
+(1)  102/      94 :                     ; ************************************************************************************************************
+(1)  103/      94 :                     ; ************************************************************************************************************
+(1)  104/      94 :                     ;
+(1)  105/      94 :                     ;									Copy top half to bottom half upside down
+(1)  106/      94 :                     ;
+(1)  107/      94 :                     ;	Uses RE,RF
+(1)  108/      94 :                     ; ************************************************************************************************************
+(1)  109/      94 :                     ; ************************************************************************************************************
+(1)  110/      94 :                     
+(1)  111/      94 :                     MirrorDisplay:	
+(1)  112/      94 : (MACRO)             	lri 	re,display 															; re points to screen top
+(1)  112/      94 : F8 0F                       ldi     (DISPLAY)/256
+(1)  112/      96 : BE                          phi     RE
+(1)  112/      97 : F8 00                       ldi     (DISPLAY)&255
+(1)  112/      99 : AE                          plo     RE
+(1)  113/      9A :                     _MDLoop:
+(1)  114/      9A : 8E                  	glo 	re 																	; set up bottom pointer rf
+(1)  115/      9B : FB F8               	xri 	0F8h
+(1)  116/      9D : AF                  	plo 	rf	
+(1)  117/      9E : 9E                  	ghi	 	re
+(1)  118/      9F : BF                  	phi 	rf
+(1)  119/      A0 : 4E                  	lda 	re 																	; copy data bumping rc
+(1)  120/      A1 : 5F                  	str 	rf
+(1)  121/      A2 : 1F                  	inc 	rf
+(1)  122/      A3 : 8E                  	glo 	re
+(1)  123/      A4 : 7E                  	shlc 	
+(1)  124/      A5 : 3B 9A               	bnf 	_MDLoop
+(1)  125/      A7 : (MACRO)             	return
+(1)  125/      A7 : E2                          sex     r2
+(1)  125/      A8 : 12                          inc     r2
+(1)  125/      A9 : 70                          ret
+      29/      AA :                     
+      30/      AA :                     	
+ AS V1.42 Beta [Bld 102] - source file game.asm - page 6 - 6/30/2016 13:01:08
+
+
+  symbol table (* = unused):
+  ------------------------
+
+*ARCHITECTURE :  i386-unknown-win32 - | *BIGENDIAN :                      0 - |
+*BRANCHEXT :                      0 - | *CASESENSITIVE :                  0 - |
+*CONSTPI :        3.141592653589793 - | *DATE :                   6/30/2016 - |
+ DISPLAY :                      F00 - | *FALSE :                          0 - |
+*FULLPMMU :                       1 - | *HAS64 :                          1 - |
+*HASDSP :                         0 - | *HASFPU :                         0 - |
+*HASPMMU :                        0 - | *INEXTMODE :                      0 - |
+*INLWORDMODE :                    0 - | *INMAXMODE :                      0 - |
+*INSRCMODE :                      0 - | *INSUPMODE :                      0 - |
+ INTERRUPT :                     29 C | *LISTON :                         1 - |
+*MACEXP :                         1 - |  MAIN :                          11 C |
+*MAP :                          E00 - |  MIRRORDISPLAY :                 94 C |
+*MOMCPU :                      1802 - | *MOMCPUNAME :                  1802 - |
+*NESTMAX :                      100 - | *PACKING :                        0 - |
+*PADDING :                        1 - |  R0 :                             0 - |
+ R1 :                             1 - |  R2 :                             2 - |
+ R3 :                             3 - |  R4 :                             4 - |
+*R5 :                             5 - | *R6 :                             6 - |
+*R7 :                             7 - | *R8 :                             8 - |
+*R9 :                             9 - | *RA :                             A - |
+*RB :                             B - |  RC :                             C - |
+ RD :                             D - |  RE :                             E - |
+ REFRESH :                       36 C | *RELAXED :                        0 - |
+ REPAINTDISPLAY :                45 C |  RETURN :                        27 C |
+ RF :                             F - |  STACK :                        DFF - |
+*TIME :                    13:01:08 - | *TRUE :                           1 - |
+*VERSION :                     142F - |  WAIT :                          25 C |
+ _MDLOOP :                       9A C |  _RDCLEAR :                      4D C |
+ _RDDRAWBYTEBLOCKS :             68 C |  _RDLOOP :                       5A C |
+ _RDNOSOLID :                    73 C |  _RDRESETMASKS :                 54 C |
+
+     60 symbols
+     36 unused symbols
+
+ AS V1.42 Beta [Bld 102] - source file game.asm - page 7 - 6/30/2016 13:01:08
+
+
+  defined macros:
+  ---------------
+
+CALL                                  | LRI                                  
+RETURN                                |
+
+      3 macros
+
+ AS V1.42 Beta [Bld 102] - source file game.asm - page 8 - 6/30/2016 13:01:08
+
+
+  codepages:
+  ----------
+
+STANDARD (0 changed characters)
+
+
+0.01 seconds assembly time
+
+    242 lines source file
+    280 lines incl. macro expansions
+      2 passes
+      0 errors
+      0 warnings

@@ -35,6 +35,8 @@ def doMaze(sr):
 					maze[p+16] = '!'
 
 	fill(maze,7*16+7)
+	maze[7*16+7] = '*'
+
 	for i in range(0,16):
 		print("".join(maze[i*16:i*16+16]))
 	print("")
