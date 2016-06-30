@@ -25,17 +25,15 @@ Repaint:
 	call 	r4,RepaintDisplay 													; clear screen and draw walls
 	; Open doors
 
-	lri 	r4,DoorOpen
+	lri 	r4,DrawPlayerViewAtDepth 
 	ldi 	0
+	recall 	r4
+	ldi 	1
 	recall 	r4
 	ldi 	2
 	recall 	r4
-	ldi 	4
+	ldi 	3
 	recall 	r4
-	ldi 	6
-	recall 	r4
-
-	call 	r4,GetPlayerNextPosition
 	
 	call 	r4,MirrorDisplay 													; mirror top of display to bottom
 	; draw princess
@@ -57,13 +55,11 @@ code:
 ;	Block 1
 ;
 	org 	code+100h
-	include door.asm
-	include player.asm
+	include door.asm 															; door "opening" code. ($3C)
+	include player.asm 															; player reset and depth view ()
 ;
 ;	TODO: 	
-; 		  	Do the door view.
-;			Map this to the actual maze.
+;			Store the forward positions as you go drawing into the maze (for princesses)
 ;			Put princesses in the maze.
 ;			Add visual on princesses
 ;			Add basic control ?
-
