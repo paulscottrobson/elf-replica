@@ -19,7 +19,7 @@ _RDClear:
 	str 	rd 																	; fill display RAM with it.
 	inc 	rd
 	glo 	rd
-	shlc 																		; only do it half way as we copy
+	shl 																		; only do it half way as we copy
 	bnf 	_RDClear 															; the bottom half.
 
 ; ************************************************************************************************************
@@ -80,15 +80,15 @@ _RDNoSolid:
 
 	glo 	rf																	; write left mask
 	str 	rd
-	shrc 																		; update the left mask.
-	shrc	
+	shr 																		; update the left mask.
+	shr	
 	ori 	0C0h
 	plo 	rf
 
 	ghi 	rf 																	; write right mask
 	str 	re
-	shlc 																		; update the right mask.
-	shlc 
+	shl 																		; update the right mask.
+	shl 
 	ori 	3
 	phi	 	rf
 
@@ -120,6 +120,9 @@ _MDLoop:
 	str 	rf
 	inc 	rf
 	glo 	re
-	shlc 	
+	shl 	
 	bnf 	_MDLoop
 	return
+
+
+		

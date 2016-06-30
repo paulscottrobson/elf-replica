@@ -12,9 +12,13 @@ stack = 	0DFFh 																; stack top
 	plo 	r3
 	sep 	r3 																	; go to main routine
 Main:
+
+Next:
+	call 	r4,RandomNumber
+	br 		Next
+
 	sex 	r2 																	; turn video on
 	inp		1
-
 	call 	r4,RepaintDisplay 													; clear screen and draw walls
 	; Open doors
 	call 	r4,MirrorDisplay 													; mirror top of display to bottom
@@ -26,5 +30,6 @@ wait:
 
 	include interrupt.asm														; screen driver
 	include repaint.asm 														; repaint outline and mirror code
+	include maze.asm 															; maze creator.
 
 	

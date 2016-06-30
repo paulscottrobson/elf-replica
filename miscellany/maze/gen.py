@@ -13,7 +13,10 @@ class LFSR:
 		self.seed = self.seed >> 1;
 		if lsb != 0:
 			self.seed ^= 0xB400
-		return (self.seed ^ (self.seed >> 8)) & mask
+		n = self.seed
+		if (self.seed & 0x80) != 0:
+			n += 1
+		return n & mask
 
 def fill(maze,pos):
 	if maze[pos] == '!':
@@ -41,4 +44,11 @@ def doMaze(sr):
 		print("".join(maze[i*16:i*16+16]))
 	print("")
 
-doMaze(LFSR(random.random()*65536))
+doMaze(LFSR())
+
+c = LFSR()
+print("{0:04x}".format(c.seed))
+for i in range(0,8):
+	r = c.get(255)
+	s = c.seed
+	print("{0:04x} {1:02x}".format(s,r))
