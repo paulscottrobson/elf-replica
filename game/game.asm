@@ -5,6 +5,9 @@ display = 	0F00h																; this page has the display in it
 map = 		0E00h 																; this page has the map in it.
 stack = 	0DF0h 																; stack top
 
+player = 	0DFFh 																; player offset in map
+direction = 0DFEh 																; 0 = right,1 = down, 2 = left, 3 = up
+
 	ret 																		; 1802 interrupts on. 
 	nop
 	lri 	r1,Interrupt 														; set interrupt vector
@@ -17,7 +20,7 @@ Main:
 	inp		1
 
 	call 	r4,CreateMaze
-
+	call 	r4,ResetPlayer
 Repaint:
 	call 	r4,RepaintDisplay 													; clear screen and draw walls
 	; Open doors
@@ -32,6 +35,8 @@ Repaint:
 	ldi 	6
 	recall 	r4
 
+	call 	r4,GetPlayerNextPosition
+	
 	call 	r4,MirrorDisplay 													; mirror top of display to bottom
 	; draw princess
 	; draw status.
@@ -53,6 +58,7 @@ code:
 ;
 	org 	code+100h
 	include door.asm
+	include player.asm
 ;
 ;	TODO: 	
 ; 		  	Do the door view.
