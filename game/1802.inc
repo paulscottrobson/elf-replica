@@ -34,6 +34,10 @@ lri Macro 	reg,address 														; load constant into 16 bit reg
 
 call Macro 	reg,address 														; call routine via mark.
 	lri 	reg,address
+	recall 	reg
+	endm
+
+recall Macro reg 																; recall (re-entrant macro)
 	mark
 	sep 	reg
 	dec 	r2
