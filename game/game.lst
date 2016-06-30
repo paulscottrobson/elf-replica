@@ -1,4 +1,4 @@
- AS V1.42 Beta [Bld 102] - source file game.asm - page 1 - 6/30/2016 20:27:40
+ AS V1.42 Beta [Bld 102] - source file game.asm - page 1 - 6/30/2016 21:07:42
 
 
        1/       0 :                     
@@ -60,116 +60,159 @@
        5/       0 : =E00H               map = 		0E00h 																; this page has the map in it.
        6/       0 : =DF0H               stack = 	0DF0h 																; stack top
        7/       0 :                     
-       8/       0 : =DFFH               player = 	0DFFh 																; player offset in map
- AS V1.42 Beta [Bld 102] - source file game.asm - page 2 - 6/30/2016 20:27:40
+       8/       0 : =DF9H               ppvector =  0DF9h																; player position vector.
+ AS V1.42 Beta [Bld 102] - source file game.asm - page 2 - 6/30/2016 21:07:42
 
 
-       9/       0 : =DFEH               direction = 0DFEh 																; 0 = right,1 = down, 2 = left, 3 = up
-      10/       0 :                     
-      11/       0 : 70                  	ret 																		; 1802 interrupts on. 
-      12/       1 : C4                  	nop
-      13/       2 : (MACRO)             	lri 	r1,Interrupt 														; set interrupt vector
-      13/       2 : F8 01                       ldi     (INTERRUPT)/256
-      13/       4 : B1                          phi     R1
-      13/       5 : F8 02                       ldi     (INTERRUPT)&255
-      13/       7 : A1                          plo     R1
-      14/       8 : (MACRO)             	lri 	r2,Stack 															; set stack address
-      14/       8 : F8 0D                       ldi     (STACK)/256
-      14/       A : B2                          phi     R2
-      14/       B : F8 F0                       ldi     (STACK)&255
-      14/       D : A2                          plo     R2
-      15/       E : F8 12               	ldi 	Main & 255 															; switch to R3 as program pointer
-      16/      10 : A3                  	plo 	r3
-      17/      11 : D3                  	sep 	r3 																	; go to main routine
-      18/      12 :                     Main:
-      19/      12 : E2                  	sex 	r2 																	; turn video on
-      20/      13 : 69                  	inp		1
-      21/      14 :                     
-      22/      14 : (MACRO)             	call 	r4,CreateMaze
-      22/      14 :  (MACRO-2)                  lri     R4,CREATEMAZE
-      22/      14 : F8 01                       ldi     (CREATEMAZE)/256
-      22/      16 : B4                          phi     R4
-      22/      17 : F8 1E                       ldi     (CREATEMAZE)&255
-      22/      19 : A4                          plo     R4
-      22/      1A :  (MACRO-2)                  recall  R4
-      22/      1A : 79                          mark
-      22/      1B : D4                          sep     R4
-      22/      1C : 22                          dec     r2
-      23/      1D : (MACRO)             	call 	r4,ResetPlayer
-      23/      1D :  (MACRO-2)                  lri     R4,RESETPLAYER
-      23/      1D : F8 02                       ldi     (RESETPLAYER)/256
-      23/      1F : B4                          phi     R4
-      23/      20 : F8 3E                       ldi     (RESETPLAYER)&255
-      23/      22 : A4                          plo     R4
-      23/      23 :  (MACRO-2)                  recall  R4
-      23/      23 : 79                          mark
-      23/      24 : D4                          sep     R4
-      23/      25 : 22                          dec     r2
-      24/      26 :                     Repaint:
-      25/      26 : (MACRO)             	call 	r4,RepaintDisplay 													; clear screen and draw walls
-      25/      26 :  (MACRO-2)                  lri     R4,REPAINTDISPLAY
-      25/      26 : F8 01                       ldi     (REPAINTDISPLAY)/256
-      25/      28 : B4                          phi     R4
-      25/      29 : F8 98                       ldi     (REPAINTDISPLAY)&255
-      25/      2B : A4                          plo     R4
-      25/      2C :  (MACRO-2)                  recall  R4
-      25/      2C : 79                          mark
-      25/      2D : D4                          sep     R4
-      25/      2E : 22                          dec     r2
-      26/      2F :                     	; Open doors
+       9/       0 : =DF8H               player = 	0DF8h 																; player offset in map
+      10/       0 : =DF7H               direction = 0DF7h 																; 0 = right,1 = down, 2 = left, 3 = up
+      11/       0 :                     
+      12/       0 : 70                  	ret 																		; 1802 interrupts on. 
+      13/       1 : C4                  	nop
+      14/       2 : (MACRO)             	lri 	r1,Interrupt 														; set interrupt vector
+      14/       2 : F8 01                       ldi     (INTERRUPT)/256
+      14/       4 : B1                          phi     R1
+      14/       5 : F8 02                       ldi     (INTERRUPT)&255
+      14/       7 : A1                          plo     R1
+      15/       8 : (MACRO)             	lri 	r2,Stack 															; set stack address
+      15/       8 : F8 0D                       ldi     (STACK)/256
+      15/       A : B2                          phi     R2
+      15/       B : F8 F0                       ldi     (STACK)&255
+      15/       D : A2                          plo     R2
+      16/       E : F8 12               	ldi 	Main & 255 															; switch to R3 as program pointer
+      17/      10 : A3                  	plo 	r3
+      18/      11 : D3                  	sep 	r3 																	; go to main routine
+      19/      12 :                     Main:
+      20/      12 : E2                  	sex 	r2 																	; turn video on
+      21/      13 : 69                  	inp		1
+      22/      14 :                     
+      23/      14 : (MACRO)             	call 	r4,CreateMaze
+      23/      14 :  (MACRO-2)                  lri     R4,CREATEMAZE
+      23/      14 : F8 01                       ldi     (CREATEMAZE)/256
+      23/      16 : B4                          phi     R4
+      23/      17 : F8 1E                       ldi     (CREATEMAZE)&255
+      23/      19 : A4                          plo     R4
+      23/      1A :  (MACRO-2)                  recall  R4
+      23/      1A : 79                          mark
+      23/      1B : D4                          sep     R4
+      23/      1C : 22                          dec     r2
+      24/      1D : (MACRO)             	call 	r4,ResetPlayer
+      24/      1D :  (MACRO-2)                  lri     R4,RESETPLAYER
+      24/      1D : F8 02                       ldi     (RESETPLAYER)/256
+      24/      1F : B4                          phi     R4
+      24/      20 : F8 3E                       ldi     (RESETPLAYER)&255
+      24/      22 : A4                          plo     R4
+      24/      23 :  (MACRO-2)                  recall  R4
+      24/      23 : 79                          mark
+      24/      24 : D4                          sep     R4
+      24/      25 : 22                          dec     r2
+      25/      26 :                     Repaint:
+      26/      26 : (MACRO)             	call 	r4,RepaintDisplay 													; clear screen and draw walls
+      26/      26 :  (MACRO-2)                  lri     R4,REPAINTDISPLAY
+      26/      26 : F8 01                       ldi     (REPAINTDISPLAY)/256
+      26/      28 : B4                          phi     R4
+      26/      29 : F8 98                       ldi     (REPAINTDISPLAY)&255
+      26/      2B : A4                          plo     R4
+      26/      2C :  (MACRO-2)                  recall  R4
+      26/      2C : 79                          mark
+      26/      2D : D4                          sep     R4
+      26/      2E : 22                          dec     r2
       27/      2F :                     
-      28/      2F : (MACRO)             	lri 	r4,DrawPlayerViewAtDepth 
-      28/      2F : F8 02                       ldi     (DRAWPLAYERVIEWATDEPTH)/256
-      28/      31 : B4                          phi     R4
-      28/      32 : F8 79                       ldi     (DRAWPLAYERVIEWATDEPTH)&255
-      28/      34 : A4                          plo     R4
-      29/      35 : F8 00               	ldi 	0
- AS V1.42 Beta [Bld 102] - source file game.asm - page 3 - 6/30/2016 20:27:40
+      28/      2F : (MACRO)             	lri 	rc,ppVector-1 														; point to player (vector -1)
+      28/      2F : F8 0D                       ldi     (PPVECTOR-1)/256
+      28/      31 : BC                          phi     RC
+      28/      32 : F8 F8                       ldi     (PPVECTOR-1)&255
+      28/      34 : AC                          plo     RC
+      29/      35 : 0C                  	ldn 	rc 																	; read player position
+ AS V1.42 Beta [Bld 102] - source file game.asm - page 3 - 6/30/2016 21:07:42
 
 
-      30/      37 : (MACRO)             	recall 	r4
-      30/      37 : 79                          mark
-      30/      38 : D4                          sep     R4
-      30/      39 : 22                          dec     r2
-      31/      3A : F8 01               	ldi 	1
-      32/      3C : (MACRO)             	recall 	r4
-      32/      3C : 79                          mark
-      32/      3D : D4                          sep     R4
-      32/      3E : 22                          dec     r2
-      33/      3F : F8 02               	ldi 	2
-      34/      41 : (MACRO)             	recall 	r4
-      34/      41 : 79                          mark
-      34/      42 : D4                          sep     R4
-      34/      43 : 22                          dec     r2
-      35/      44 : F8 03               	ldi 	3
-      36/      46 : (MACRO)             	recall 	r4
-      36/      46 : 79                          mark
-      36/      47 : D4                          sep     R4
-      36/      48 : 22                          dec     r2
-      37/      49 :                     	
-      38/      49 : (MACRO)             	call 	r4,MirrorDisplay 													; mirror top of display to bottom
-      38/      49 :  (MACRO-2)                  lri     R4,MIRRORDISPLAY
-      38/      49 : F8 01                       ldi     (MIRRORDISPLAY)/256
-      38/      4B : B4                          phi     R4
-      38/      4C : F8 E7                       ldi     (MIRRORDISPLAY)&255
-      38/      4E : A4                          plo     R4
-      38/      4F :  (MACRO-2)                  recall  R4
-      38/      4F : 79                          mark
-      38/      50 : D4                          sep     R4
-      38/      51 : 22                          dec     r2
-      39/      52 :                     	; draw princess
-      40/      52 :                     	; draw status.
-      41/      52 :                     
-      42/      52 :                     wait:
-      43/      52 : 30 52               	br 		wait
-      44/      54 :                     
-      45/     100 :                     	org 	100h
-      46/     100 :                     
-      47/     100 :                     code:
-      48/     100 :                     ;
-      49/     100 :                     ;	Block 0
-      50/     100 :                     ;
-      51/     100 :                     	include interrupt.asm														; screen driver ($1E)
+      30/      36 : 1C                  	inc 	rc
+      31/      37 : 5C                  	str 	rc 																	; save in vector[0]
+      32/      38 : 1C                  	inc 	rc 																	; set up vector to point to 1st element
+      33/      39 : (MACRO)             	lri 	r4,DrawPlayerViewAtDepth 
+      33/      39 : F8 02                       ldi     (DRAWPLAYERVIEWATDEPTH)/256
+      33/      3B : B4                          phi     R4
+      33/      3C : F8 79                       ldi     (DRAWPLAYERVIEWATDEPTH)&255
+      33/      3E : A4                          plo     R4
+      34/      3F :                     
+      35/      3F : F8 00               	ldi 	0
+      36/      41 : (MACRO)             	recall 	r4
+      36/      41 : 79                          mark
+      36/      42 : D4                          sep     R4
+      36/      43 : 22                          dec     r2
+      37/      44 : 33 59               	bdf 	__RepaintExit
+      38/      46 : F8 01               	ldi 	1
+      39/      48 : (MACRO)             	recall 	r4
+      39/      48 : 79                          mark
+      39/      49 : D4                          sep     R4
+      39/      4A : 22                          dec     r2
+      40/      4B : 33 59               	bdf 	__RepaintExit
+      41/      4D : F8 02               	ldi 	2
+      42/      4F : (MACRO)             	recall 	r4
+      42/      4F : 79                          mark
+      42/      50 : D4                          sep     R4
+      42/      51 : 22                          dec     r2
+      43/      52 : 33 59               	bdf 	__RepaintExit
+      44/      54 : F8 03               	ldi 	3
+      45/      56 : (MACRO)             	recall 	r4
+      45/      56 : 79                          mark
+      45/      57 : D4                          sep     R4
+      45/      58 : 22                          dec     r2
+      46/      59 :                     __RepaintExit:
+      47/      59 : F8 F9               	ldi 	(ppVector & 255)													; fix up the vector pointer to [0]
+      48/      5B : AC                  	plo 	rc
+      49/      5C : 0C                  	ldn 	rc 																	; reread the first player position
+      50/      5D : 2C                  	dec 	rc
+      51/      5E : 5C                  	str 	rc 																	; update actual player position.
+      52/      5F :                     
+      53/      5F : (MACRO)             	call 	r4,MirrorDisplay 													; mirror top of display to bottom
+      53/      5F :  (MACRO-2)                  lri     R4,MIRRORDISPLAY
+      53/      5F : F8 01                       ldi     (MIRRORDISPLAY)/256
+      53/      61 : B4                          phi     R4
+      53/      62 : F8 E7                       ldi     (MIRRORDISPLAY)&255
+      53/      64 : A4                          plo     R4
+      53/      65 :  (MACRO-2)                  recall  R4
+      53/      65 : 79                          mark
+      53/      66 : D4                          sep     R4
+      53/      67 : 22                          dec     r2
+      54/      68 :                     
+      55/      68 :                     	; draw princess
+      56/      68 :                     	; draw status.
+      57/      68 :                     
+      58/      68 : (MACRO)             	lri 	r4,Direction
+      58/      68 : F8 0D                       ldi     (DIRECTION)/256
+      58/      6A : B4                          phi     R4
+      58/      6B : F8 F7                       ldi     (DIRECTION)&255
+      58/      6D : A4                          plo     R4
+      59/      6E : 04                  	ldn 	r4
+      60/      6F : FC 01               	adi 	1
+ AS V1.42 Beta [Bld 102] - source file game.asm - page 4 - 6/30/2016 21:07:42
+
+
+      61/      71 : FA 03               	ani 	3
+      62/      73 : 54                  	str 	r4
+      63/      74 :                     
+      64/      74 : (MACRO)             	lri 	r4,40000
+      64/      74 : F8 9C                       ldi     (40000)/256
+      64/      76 : B4                          phi     R4
+      64/      77 : F8 40                       ldi     (40000)&255
+      64/      79 : A4                          plo     R4
+      65/      7A :                     delay:
+      66/      7A : 24                  	dec 	r4
+      67/      7B : 94                  	ghi 	r4
+      68/      7C : 3A 7A               	bnz 	delay	
+      69/      7E : 30 26               	br 		Repaint
+      70/      80 :                     wait:
+      71/      80 : 30 80               	br 		wait
+      72/      82 :                     
+      73/     100 :                     	org 	100h
+      74/     100 :                     
+      75/     100 :                     code:
+      76/     100 :                     ;
+      77/     100 :                     ;	Block 0
+      78/     100 :                     ;
+      79/     100 :                     	include interrupt.asm														; screen driver ($1E)
 (1)    1/     100 :                     ; ************************************************************************************************************
 (1)    2/     100 :                     ; ************************************************************************************************************
 (1)    3/     100 :                     ;
@@ -187,9 +230,6 @@
 (1)   15/     104 : 22                  	dec 	r2 																	; save D on stack
 (1)   16/     105 : 52                  	str 	r2
 (1)   17/     106 : C4                  	nop 																		; pad out cycles till rendering
- AS V1.42 Beta [Bld 102] - source file game.asm(interrupt.asm) - page 4 - 6/30/2016 20:27:40
-
-
 (1)   18/     107 : C4                  	nop
 (1)   19/     108 : C4                  	nop
 (1)   20/     109 : (MACRO)             	lri 	r0,display 															; draw from here
@@ -210,13 +250,16 @@
 (1)   31/     116 : A0                  	plo 	r0
 (1)   32/     117 :                     
 (1)   33/     117 : E2                  	sex 	r2
+ AS V1.42 Beta [Bld 102] - source file game.asm(interrupt.asm) - page 5 - 6/30/2016 21:07:42
+
+
 (1)   34/     118 : 20                  	dec 	r0
 (1)   35/     119 : A0                  	plo 	r0
 (1)   36/     11A :                     
 (1)   37/     11A : 3C 0F               	bn1 	Refresh 															; in emulator we never loop back
 (1)   38/     11C : 30 00               	br 		Return
 (1)   39/     11E :                     
-      52/     11E :                     	include maze.asm 															; maze creator & RNG ($7B)
+      80/     11E :                     	include maze.asm 															; maze creator & RNG ($7B)
 (1)    1/     11E :                     
 (1)    2/     11E :                     
 (1)    3/     11E :                     ; ************************************************************************************************************
@@ -250,9 +293,6 @@
 (1)   25/     12E : BC                          phi     RC
 (1)   25/     12F : F8 11                       ldi     (MAP+16+1)&255
 (1)   25/     131 : AC                          plo     RC
- AS V1.42 Beta [Bld 102] - source file game.asm(maze.asm) - page 5 - 6/30/2016 20:27:40
-
-
 (1)   26/     132 : (MACRO)             	lri 	r5,RandomNumber 													; r5 = random subroutine (runs in R4)
 (1)   26/     132 : F8 01                       ldi     (RANDOMNUMBER)/256
 (1)   26/     134 : B5                          phi     R5
@@ -273,6 +313,9 @@
 (1)   39/     149 :                     
 (1)   40/     149 : (MACRO)             	recall 	r5																	; random number
 (1)   40/     149 : 79                          mark
+ AS V1.42 Beta [Bld 102] - source file game.asm(maze.asm) - page 6 - 6/30/2016 21:07:42
+
+
 (1)   40/     14A : D5                          sep     R5
 (1)   40/     14B : 22                          dec     r2
 (1)   41/     14C : FA 0F               	ani 	15
@@ -313,9 +356,6 @@
 (1)   70/     172 :                     ; ************************************************************************************************************
 (1)   71/     172 :                     ; ************************************************************************************************************
 (1)   72/     172 :                     ;
- AS V1.42 Beta [Bld 102] - source file game.asm(maze.asm) - page 6 - 6/30/2016 20:27:40
-
-
 (1)   73/     172 :                     ;							Random Number Generator - same as class LFSR in gen.py
 (1)   74/     172 :                     ;
 (1)   75/     172 :                     ;	uses RF. 
@@ -336,6 +376,9 @@
 (1)   86/     17E : AF                  	plo 	rf
 (1)   87/     17F :                     __RNLowM1:
 (1)   88/     17F : F8 E1               	ldi 	0E1h 																; get upper seeded value
+ AS V1.42 Beta [Bld 102] - source file game.asm(maze.asm) - page 7 - 6/30/2016 21:07:42
+
+
 (1)   89/     181 : 76                  	shrc  																		; rotate it right and in
 (1)   90/     182 : 5F                  	str 	rf 																	; write it back.
 (1)   91/     183 : E2                  	sex 	r2																	; save at TOS
@@ -358,7 +401,7 @@
 (1)  105/     195 : 70                          ret
 (1)  106/     196 : 30 72               	br 		RandomNumber 														; is re-entrant.
 (1)  107/     198 :                     
-      53/     198 :                     	include repaint.asm 														; repaint outline/mirror ($64)
+      81/     198 :                     	include repaint.asm 														; repaint outline/mirror ($64)
 (1)    1/     198 :                     ; ************************************************************************************************************
 (1)    2/     198 :                     ; ************************************************************************************************************
 (1)    3/     198 :                     ;
@@ -376,9 +419,6 @@
 (1)   15/     19E : AC                  	plo 	rc
 (1)   16/     19F : AD                  	plo 	rd
 (1)   17/     1A0 :                     _RDClear:
- AS V1.42 Beta [Bld 102] - source file game.asm(repaint.asm) - page 7 - 6/30/2016 20:27:40
-
-
 (1)   18/     1A0 : 8C                  	glo 	rc 																	; rc.0 is zero
 (1)   19/     1A1 : 5D                  	str 	rd 																	; fill display RAM with it.
 (1)   20/     1A2 : 1D                  	inc 	rd
@@ -399,6 +439,9 @@
 (1)   35/     1AD :                     ; ************************************************************************************************************
 (1)   36/     1AD :                     ;				Main repaint loop. rc points to the line position. rf.0 left mask rf.1 right mask
 (1)   37/     1AD :                     ; ************************************************************************************************************
+ AS V1.42 Beta [Bld 102] - source file game.asm(repaint.asm) - page 8 - 6/30/2016 21:07:42
+
+
 (1)   38/     1AD :                     
 (1)   39/     1AD :                     _RDLoop:
 (1)   40/     1AD : 9C                  	ghi		rc 																	; copy rc.1 to rd.1 and re.1
@@ -439,9 +482,6 @@
 (1)   75/     1CA : AE                  	plo 	re
 (1)   76/     1CB :                     
 (1)   77/     1CB : 8C                  	glo 	rc 																	; point rc to the next line.
- AS V1.42 Beta [Bld 102] - source file game.asm(repaint.asm) - page 8 - 6/30/2016 20:27:40
-
-
 (1)   78/     1CC : FC 08               	adi 	8
 (1)   79/     1CE : AC                  	plo 	rc
 (1)   80/     1CF :                     
@@ -462,6 +502,9 @@
 (1)   95/     1DD : 3B AD               	bnf 	_RDLoop
 (1)   96/     1DF : 1C                  	inc 	rc 																	; step out 1.
 (1)   97/     1E0 : 8C                  	glo 	rc 																	; if not half way down loop back.
+ AS V1.42 Beta [Bld 102] - source file game.asm(repaint.asm) - page 9 - 6/30/2016 21:07:42
+
+
 (1)   98/     1E1 : 7E                  	shlc
 (1)   99/     1E2 : 3B A7               	bnf 	_RDResetMasks
 (1)  100/     1E4 : (MACRO)             	return
@@ -502,15 +545,12 @@
 (1)  125/     1FC : 70                          ret
 (1)  126/     1FD :                     
 (1)  127/     1FD :                     
- AS V1.42 Beta [Bld 102] - source file game.asm(repaint.asm) - page 9 - 6/30/2016 20:27:40
-
-
 (1)  128/     1FD :                     		
-      54/     1FD :                     ;
-      55/     1FD :                     ;	Block 1
-      56/     1FD :                     ;
-      57/     200 :                     	org 	code+100h
-      58/     200 :                     	include door.asm 															; door "opening" code. ($3C)
+      82/     1FD :                     ;
+      83/     1FD :                     ;	Block 1
+      84/     1FD :                     ;
+      85/     200 :                     	org 	code+100h
+      86/     200 :                     	include door.asm 															; door "opening" code. ($3C)
 (1)    1/     200 :                     ; ************************************************************************************************************
 (1)    2/     200 :                     ; ************************************************************************************************************
 (1)    3/     200 :                     ;
@@ -525,6 +565,9 @@
 (1)   12/     201 : AF                  	plo 	rf 																	; ready to mask it at rf
 (1)   13/     202 : FA 04               	ani 	4 																	; 0 for left, 4 for right.
 (1)   14/     204 : 32 08               	bz 		__DOLeftMask
+ AS V1.42 Beta [Bld 102] - source file game.asm(door.asm) - page 10 - 6/30/2016 21:07:42
+
+
 (1)   15/     206 : F8 81               	ldi 	081h 																
 (1)   16/     208 :                     __DOLeftMask:																	; 0 for left $81 for right	
 (1)   17/     208 : FB 80               	xri 	080h 																; now $80 for left $01 for right
@@ -565,9 +608,6 @@
 (1)   52/     231 :                     
 (1)   53/     231 : 8E                  	glo 	re 																	; get door position
 (1)   54/     232 : FC 78               	adi 	15*8 																; put half way down
- AS V1.42 Beta [Bld 102] - source file game.asm(door.asm) - page 10 - 6/30/2016 20:27:40
-
-
 (1)   55/     234 : F7                  	sm 																			; subtract offset
 (1)   56/     235 :                     
 (1)   57/     235 : AF                  	plo 	rf
@@ -578,7 +618,7 @@
 (1)   60/     23A : 12                          inc     r2
 (1)   60/     23B : 70                          ret
 (1)   61/     23C : 30 00               	br 		DoorOpen
-      59/     23E :                     	include player.asm 															; player reset and depth view ()
+      87/     23E :                     	include player.asm 															; player reset and depth view ()
 (1)    1/     23E :                     ; ************************************************************************************************************
 (1)    2/     23E :                     ; ************************************************************************************************************
 (1)    3/     23E :                     ;
@@ -588,11 +628,14 @@
 (1)    7/     23E :                     ; ************************************************************************************************************
 (1)    8/     23E :                     ; ************************************************************************************************************
 (1)    9/     23E :                     
+ AS V1.42 Beta [Bld 102] - source file game.asm(player.asm) - page 11 - 6/30/2016 21:07:42
+
+
 (1)   10/     23E :                     ResetPlayer:
 (1)   11/     23E : (MACRO)             	lri 	rf,Player 															; initialise pointer, use RF as index
 (1)   11/     23E : F8 0D                       ldi     (PLAYER)/256
 (1)   11/     240 : BF                          phi     RF
-(1)   11/     241 : F8 FF                       ldi     (PLAYER)&255
+(1)   11/     241 : F8 F8                       ldi     (PLAYER)&255
 (1)   11/     243 : AF                          plo     RF
 (1)   12/     244 : EF                  	sex 	rf
 (1)   13/     245 : F8 77               	ldi 	7*16+7																; player at (7,7)
@@ -623,14 +666,11 @@
 (1)   35/     252 : (MACRO)             	lri 	rf,Direction 														; load player direction.
 (1)   35/     252 : F8 0D                       ldi     (DIRECTION)/256
 (1)   35/     254 : BF                          phi     RF
-(1)   35/     255 : F8 FE                       ldi     (DIRECTION)&255
+(1)   35/     255 : F8 F7                       ldi     (DIRECTION)&255
 (1)   35/     257 : AF                          plo     RF
 (1)   36/     258 : 0F                  	ldn 	rf
 (1)   37/     259 : F4                  	add 	 																	; get into D + offset
 (1)   38/     25A : FA 03               	ani 	3 																	; force into a position.
- AS V1.42 Beta [Bld 102] - source file game.asm(player.asm) - page 11 - 6/30/2016 20:27:40
-
-
 (1)   39/     25C : FC 75               	adi 	PlayerDirectionTable & 255 											; get an address in the table
 (1)   40/     25E : AE                  	plo 	re 																	; point RE to that value.
 (1)   41/     25F : F8 02               	ldi 	PlayerDirectionTable / 256
@@ -638,7 +678,7 @@
 (1)   43/     262 : (MACRO)             	lri 	rf,Player 															; point RF to the position.
 (1)   43/     262 : F8 0D                       ldi     (PLAYER)/256
 (1)   43/     264 : BF                          phi     RF
-(1)   43/     265 : F8 FF                       ldi     (PLAYER)&255
+(1)   43/     265 : F8 F8                       ldi     (PLAYER)&255
 (1)   43/     267 : AF                          plo     RF
 (1)   44/     268 : EE                  	sex 	re 																	; R(X) points to the direction table
 (1)   45/     269 : 0F                  	ldn 	rf 																	; read position
@@ -651,6 +691,9 @@
 (1)   51/     270 : E2                          sex     r2
 (1)   51/     271 : 12                          inc     r2
 (1)   51/     272 : 70                          ret
+ AS V1.42 Beta [Bld 102] - source file game.asm(player.asm) - page 12 - 6/30/2016 21:07:42
+
+
 (1)   52/     273 : 30 50               	br 		GetPlayerNextOffset 												; re-entrant into next offset.
 (1)   53/     275 :                     
 (1)   54/     275 :                     PlayerDirectionTable:
@@ -659,141 +702,143 @@
 (1)   57/     279 :                     ; ************************************************************************************************************
 (1)   58/     279 :                     ; ************************************************************************************************************
 (1)   59/     279 :                     ;
-(1)   60/     279 :                     ;		  Draw player view at depth D (0 = outermost, 3 = innermost). Returns DF = 0 if can move forward.
-(1)   61/     279 :                     ;		  
-(1)   62/     279 :                     ;	Uses GetPlayerNextOffset (RE/RF) and DoorOpen(RE/RF). Runs in R4.
-(1)   63/     279 :                     ; ************************************************************************************************************
+(1)   60/     279 :                     ;		Draw player view at depth D (0 = outermost, 3 = innermost). Returns DF = 0 if can move forward.
+(1)   61/     279 :                     ;		D returned unchanged. Store new position at (RC) and increment RC.
+(1)   62/     279 :                     ;		  
+(1)   63/     279 :                     ;	Uses GetPlayerNextOffset (RE/RF) and DoorOpen(RE/RF). Runs in R4.
 (1)   64/     279 :                     ; ************************************************************************************************************
-(1)   65/     279 :                     
-(1)   66/     279 :                     DrawPlayerViewAtDepth:
-(1)   67/     279 : A6                  	plo 	r6 																	; save the depth in R6.
-(1)   68/     27A :                     
-(1)   69/     27A : (MACRO)             	lri 	r5,GetPlayerNextOffset												; call to identify left/right
-(1)   69/     27A : F8 02                       ldi     (GETPLAYERNEXTOFFSET)/256
-(1)   69/     27C : B5                          phi     R5
-(1)   69/     27D : F8 50                       ldi     (GETPLAYERNEXTOFFSET)&255
-(1)   69/     27F : A5                          plo     R5
-(1)   70/     280 : F8 FF               	ldi 	-1 																	; can we look left ?
-(1)   71/     282 : (MACRO)             	recall 	r5    
-(1)   71/     282 : 79                          mark
-(1)   71/     283 : D5                          sep     R5
-(1)   71/     284 : 22                          dec     r2
-(1)   72/     285 : 0F                  	ldn 	rf 																	; get what's there into R7.0
-(1)   73/     286 : A7                  	plo 	r7
-(1)   74/     287 : F8 01               	ldi 	1 																	; can we look right ?
-(1)   75/     289 : (MACRO)             	recall 	r5
-(1)   75/     289 : 79                          mark
-(1)   75/     28A : D5                          sep     R5
-(1)   75/     28B : 22                          dec     r2
-(1)   76/     28C : 0F                  	ldn 	rf 																	; get what's there into R7.1
-(1)   77/     28D : B7                  	phi 	r7
-(1)   78/     28E : F8 00               	ldi 	0 																	; look ahead
-(1)   79/     290 : (MACRO)             	recall 	r5
-(1)   79/     290 : 79                          mark
-(1)   79/     291 : D5                          sep     R5
- AS V1.42 Beta [Bld 102] - source file game.asm(player.asm) - page 12 - 6/30/2016 20:27:40
+(1)   65/     279 :                     ; ************************************************************************************************************
+(1)   66/     279 :                     
+(1)   67/     279 :                     DrawPlayerViewAtDepth:
+(1)   68/     279 : A6                  	plo 	r6 																	; save the depth in R6.
+(1)   69/     27A :                     
+(1)   70/     27A : (MACRO)             	lri 	r5,GetPlayerNextOffset												; call to identify left/right
+(1)   70/     27A : F8 02                       ldi     (GETPLAYERNEXTOFFSET)/256
+(1)   70/     27C : B5                          phi     R5
+(1)   70/     27D : F8 50                       ldi     (GETPLAYERNEXTOFFSET)&255
+(1)   70/     27F : A5                          plo     R5
+(1)   71/     280 : F8 FF               	ldi 	-1 																	; can we look left ?
+(1)   72/     282 : (MACRO)             	recall 	r5    
+(1)   72/     282 : 79                          mark
+(1)   72/     283 : D5                          sep     R5
+(1)   72/     284 : 22                          dec     r2
+(1)   73/     285 : 0F                  	ldn 	rf 																	; get what's there into R7.0
+(1)   74/     286 : A7                  	plo 	r7
+(1)   75/     287 : F8 01               	ldi 	1 																	; can we look right ?
+(1)   76/     289 : (MACRO)             	recall 	r5
+(1)   76/     289 : 79                          mark
+(1)   76/     28A : D5                          sep     R5
+(1)   76/     28B : 22                          dec     r2
+(1)   77/     28C : 0F                  	ldn 	rf 																	; get what's there into R7.1
+(1)   78/     28D : B7                  	phi 	r7
+(1)   79/     28E : F8 00               	ldi 	0 																	; look ahead
+(1)   80/     290 : (MACRO)             	recall 	r5
+(1)   80/     290 : 79                          mark
+(1)   80/     291 : D5                          sep     R5
+(1)   80/     292 : 22                          dec     r2
+(1)   81/     293 : 5C                  	str 	rc 																	; save position at (RC)
+(1)   82/     294 : 0F                  	ldn 	rf 																	; get what's there into R8.0
+(1)   83/     295 : A8                  	plo 	r8 	
+(1)   84/     296 :                     
+(1)   85/     296 : (MACRO)             	lri 	rf,Player 															; update the player position from R8.1
+(1)   85/     296 : F8 0D                       ldi     (PLAYER)/256
+(1)   85/     298 : BF                          phi     RF
+(1)   85/     299 : F8 F8                       ldi     (PLAYER)&255
+(1)   85/     29B : AF                          plo     RF
+(1)   86/     29C : 0C                  	ldn 	rc 																	; read read position and update it
+(1)   87/     29D : 5F                  	str 	rf
+(1)   88/     29E : 1C                  	inc 	rc 																	; increment position vector pointer.
+(1)   89/     29F :                     
+(1)   90/     29F : (MACRO)             	lri 	r5,DoorOpen 														; prepare to show open door.
+(1)   90/     29F : F8 02                       ldi     (DOOROPEN)/256
+(1)   90/     2A1 : B5                          phi     R5
+(1)   90/     2A2 : F8 00                       ldi     (DOOROPEN)&255
+(1)   90/     2A4 : A5                          plo     R5
+ AS V1.42 Beta [Bld 102] - source file game.asm(player.asm) - page 13 - 6/30/2016 21:07:42
 
 
-(1)   79/     292 : 22                          dec     r2
-(1)   80/     293 : B8                  	phi 	r8 																	; save next position into R8.1
-(1)   81/     294 : 0F                  	ldn 	rf 																	; get what's there into R8.0
-(1)   82/     295 : A8                  	plo 	r8 	
-(1)   83/     296 :                     
-(1)   84/     296 : (MACRO)             	lri 	rf,Player 															; update the player position from R8.1
-(1)   84/     296 : F8 0D                       ldi     (PLAYER)/256
-(1)   84/     298 : BF                          phi     RF
-(1)   84/     299 : F8 FF                       ldi     (PLAYER)&255
-(1)   84/     29B : AF                          plo     RF
-(1)   85/     29C : 98                  	ghi 	r8
-(1)   86/     29D : 5F                  	str 	rf
-(1)   87/     29E :                     
-(1)   88/     29E : (MACRO)             	lri 	r5,DoorOpen 														; prepare to show open door.
-(1)   88/     29E : F8 02                       ldi     (DOOROPEN)/256
-(1)   88/     2A0 : B5                          phi     R5
-(1)   88/     2A1 : F8 00                       ldi     (DOOROPEN)&255
-(1)   88/     2A3 : A5                          plo     R5
-(1)   89/     2A4 : 87                  	glo 	r7 																	; wall on left side ?
-(1)   90/     2A5 : FE                  	shl
-(1)   91/     2A6 : 33 AC               	bdf 	__DPVNoLeftWall
-(1)   92/     2A8 : 86                  	glo 	r6 																	; open depth up
-(1)   93/     2A9 : (MACRO)             	recall 	r5 
-(1)   93/     2A9 : 79                          mark
-(1)   93/     2AA : D5                          sep     R5
-(1)   93/     2AB : 22                          dec     r2
-(1)   94/     2AC :                     __DPVNoLeftWall:
-(1)   95/     2AC : 97                  	ghi 	r7 																	; wall on right side ?
-(1)   96/     2AD : FE                  	shl
-(1)   97/     2AE : 33 B6               	bdf 	__DPVNoRightWall
-(1)   98/     2B0 : 86                  	glo 	r6 																	; open 7-depth up.
-(1)   99/     2B1 : FB 07               	xri 	7
-(1)  100/     2B3 : (MACRO)             	recall 	r5
-(1)  100/     2B3 : 79                          mark
-(1)  100/     2B4 : D5                          sep     R5
-(1)  100/     2B5 : 22                          dec     r2
-(1)  101/     2B6 :                     __DPVNoRightWall:
-(1)  102/     2B6 : 88                  	glo 	r8 																	; get what's in front.
-(1)  103/     2B7 : FE                  	shl 
-(1)  104/     2B8 : 3B E7               	bnf 	__DPVExit 															; if clear exit with DF = 0
-(1)  105/     2BA :                     
-(1)  106/     2BA : 86                  	glo 	r6 																	; calculate start position
-(1)  107/     2BB : FC 01               	adi 	1 																	; move in one
-(1)  108/     2BD : E2                  	sex 	r2 																	; depth * 8 + depth
-(1)  109/     2BE : 52                  	str 	r2
-(1)  110/     2BF : FE                  	shl 																		; *8 * 4
-(1)  111/     2C0 : FE                  	shl
-(1)  112/     2C1 : FE                  	shl
-(1)  113/     2C2 : FE                  	shl
-(1)  114/     2C3 : FE                  	shl
-(1)  115/     2C4 : F4                  	add 	 																	; *9
-(1)  116/     2C5 : AF                  	plo 	rf 																	; set RF to point to first block. 
-(1)  117/     2C6 : F8 0F               	ldi 	Display/256
-(1)  118/     2C8 : BF                  	phi 	rf
-(1)  119/     2C9 : F8 FF               	ldi 	0FFh 																; set writing value to $AA
-(1)  120/     2CB : AE                  	plo 	re
-(1)  121/     2CC :                     __DPVDrawWall:
-(1)  122/     2CC : 86                  	glo 	r6 																	; 0123 for depths
-(1)  123/     2CD : FB 03               	xri 	3 																	; 3210 for depths
-(1)  124/     2CF : FE                  	shl 																		; 6420 for depths
- AS V1.42 Beta [Bld 102] - source file game.asm(player.asm) - page 13 - 6/30/2016 20:27:40
+(1)   91/     2A5 : 87                  	glo 	r7 																	; wall on left side ?
+(1)   92/     2A6 : FE                  	shl
+(1)   93/     2A7 : 33 AD               	bdf 	__DPVNoLeftWall
+(1)   94/     2A9 : 86                  	glo 	r6 																	; open depth up
+(1)   95/     2AA : (MACRO)             	recall 	r5 
+(1)   95/     2AA : 79                          mark
+(1)   95/     2AB : D5                          sep     R5
+(1)   95/     2AC : 22                          dec     r2
+(1)   96/     2AD :                     __DPVNoLeftWall:
+(1)   97/     2AD : 97                  	ghi 	r7 																	; wall on right side ?
+(1)   98/     2AE : FE                  	shl
+(1)   99/     2AF : 33 B7               	bdf 	__DPVNoRightWall
+(1)  100/     2B1 : 86                  	glo 	r6 																	; open 7-depth up.
+(1)  101/     2B2 : FB 07               	xri 	7
+(1)  102/     2B4 : (MACRO)             	recall 	r5
+(1)  102/     2B4 : 79                          mark
+(1)  102/     2B5 : D5                          sep     R5
+(1)  102/     2B6 : 22                          dec     r2
+(1)  103/     2B7 :                     __DPVNoRightWall:
+(1)  104/     2B7 : 88                  	glo 	r8 																	; get what's in front.
+(1)  105/     2B8 : FE                  	shl 
+(1)  106/     2B9 : 3B E8               	bnf 	__DPVExit 															; if clear exit with DF = 0
+(1)  107/     2BB :                     
+(1)  108/     2BB : 86                  	glo 	r6 																	; calculate start position
+(1)  109/     2BC : FC 01               	adi 	1 																	; move in one
+(1)  110/     2BE : E2                  	sex 	r2 																	; depth * 8 + depth
+(1)  111/     2BF : 52                  	str 	r2
+(1)  112/     2C0 : FE                  	shl 																		; *8 * 4
+(1)  113/     2C1 : FE                  	shl
+(1)  114/     2C2 : FE                  	shl
+(1)  115/     2C3 : FE                  	shl
+(1)  116/     2C4 : FE                  	shl
+(1)  117/     2C5 : F4                  	add 	 																	; *9
+(1)  118/     2C6 : AF                  	plo 	rf 																	; set RF to point to first block. 
+(1)  119/     2C7 : F8 0F               	ldi 	Display/256
+(1)  120/     2C9 : BF                  	phi 	rf
+(1)  121/     2CA : F8 FF               	ldi 	0FFh 																; set writing value to $AA
+(1)  122/     2CC : AE                  	plo 	re
+(1)  123/     2CD :                     __DPVDrawWall:
+(1)  124/     2CD : 86                  	glo 	r6 																	; 0123 for depths
+(1)  125/     2CE : FB 03               	xri 	3 																	; 3210 for depths
+(1)  126/     2D0 : FE                  	shl 																		; 6420 for depths
+(1)  127/     2D1 : 32 E5               	bz 		__DPVExitWall 														; if nothing to draw skip.
+(1)  128/     2D3 : A7                  	plo 	r7
+(1)  129/     2D4 : 8F                  	glo 	rf 																	; save the start position of row.
+(1)  130/     2D5 : BE                  	phi 	re	
+(1)  131/     2D6 :                     __DPVDrawLine:
+(1)  132/     2D6 : 8E                  	glo 	re 																	; copy one wall piece over.
+(1)  133/     2D7 : 5F                  	str 	rf
+(1)  134/     2D8 : 1F                  	inc 	rf	
+(1)  135/     2D9 : 27                  	dec 	r7 																	; do required number of times
+(1)  136/     2DA : 87                  	glo 	r7
+(1)  137/     2DB : 3A D6               	bnz 	__DPVDrawLine
+(1)  138/     2DD : AE                  	plo 	re 																	; draw spaces from here on.
+(1)  139/     2DE : 9E                  	ghi 	re 																	; get start of line RE.1
+(1)  140/     2DF : FC 08               	adi 	8
+(1)  141/     2E1 : AF                  	plo 	rf 																	; point RF.0 one line down.
+(1)  142/     2E2 : FE                  	shl
+(1)  143/     2E3 : 3B CD               	bnf 	__DPVDrawWall 														; go back if not reached half way.
+(1)  144/     2E5 :                     __DPVExitWall:
+ AS V1.42 Beta [Bld 102] - source file game.asm(player.asm) - page 14 - 6/30/2016 21:07:42
 
 
-(1)  125/     2D0 : 32 E4               	bz 		__DPVExitWall 														; if nothing to draw skip.
-(1)  126/     2D2 : A7                  	plo 	r7
-(1)  127/     2D3 : 8F                  	glo 	rf 																	; save the start position of row.
-(1)  128/     2D4 : BE                  	phi 	re	
-(1)  129/     2D5 :                     __DPVDrawLine:
-(1)  130/     2D5 : 8E                  	glo 	re 																	; copy one wall piece over.
-(1)  131/     2D6 : 5F                  	str 	rf
-(1)  132/     2D7 : 1F                  	inc 	rf	
-(1)  133/     2D8 : 27                  	dec 	r7 																	; do required number of times
-(1)  134/     2D9 : 87                  	glo 	r7
-(1)  135/     2DA : 3A D5               	bnz 	__DPVDrawLine
-(1)  136/     2DC : AE                  	plo 	re 																	; draw spaces from here on.
-(1)  137/     2DD : 9E                  	ghi 	re 																	; get start of line RE.1
-(1)  138/     2DE : FC 08               	adi 	8
-(1)  139/     2E0 : AF                  	plo 	rf 																	; point RF.0 one line down.
-(1)  140/     2E1 : FE                  	shl
-(1)  141/     2E2 : 3B CC               	bnf 	__DPVDrawWall 														; go back if not reached half way.
-(1)  142/     2E4 :                     __DPVExitWall:
-(1)  143/     2E4 : F8 FF               	ldi 	0FFh 																; set DF.
-(1)  144/     2E6 : FE                  	shl
-(1)  145/     2E7 :                     __DPVExit:
-(1)  146/     2E7 : 86                  	glo 	r6 																	; restore D.
-(1)  147/     2E8 : (MACRO)             	return
-(1)  147/     2E8 : E2                          sex     r2
-(1)  147/     2E9 : 12                          inc     r2
-(1)  147/     2EA : 70                          ret
-(1)  148/     2EB : 30 79               	br 		DrawPlayerViewAtDepth
-(1)  149/     2ED :                     
-(1)  150/     2ED :                     
-      60/     2ED :                     ;
-      61/     2ED :                     ;	TODO: 	
-      62/     2ED :                     ;			Store the forward positions as you go drawing into the maze (for princesses)
-      63/     2ED :                     ;			Put princesses in the maze.
-      64/     2ED :                     ;			Add visual on princesses
-      65/     2ED :                     ;			Add basic control ?
-      66/     2ED :                     
- AS V1.42 Beta [Bld 102] - source file game.asm - page 14 - 6/30/2016 20:27:40
+(1)  145/     2E5 : F8 FF               	ldi 	0FFh 																; set DF.
+(1)  146/     2E7 : FE                  	shl
+(1)  147/     2E8 :                     __DPVExit:
+(1)  148/     2E8 : 86                  	glo 	r6 																	; restore D.
+(1)  149/     2E9 : (MACRO)             	return
+(1)  149/     2E9 : E2                          sex     r2
+(1)  149/     2EA : 12                          inc     r2
+(1)  149/     2EB : 70                          ret
+(1)  150/     2EC : 30 79               	br 		DrawPlayerViewAtDepth
+(1)  151/     2EE :                     
+(1)  152/     2EE :                     
+      88/     2EE :                     ;
+      89/     2EE :                     ;	TODO: 	
+      90/     2EE :                     ;			Store the forward positions as you go drawing into the maze (for princesses)
+      91/     2EE :                     ;			Put princesses in the maze.
+      92/     2EE :                     ;			Add visual on princesses
+      93/     2EE :                     ;			Add basic control ?
+      94/     2EE :                     
+ AS V1.42 Beta [Bld 102] - source file game.asm - page 15 - 6/30/2016 21:07:42
 
 
   symbol table (* = unused):
@@ -803,23 +848,24 @@
 *BRANCHEXT :                      0 - | *CASESENSITIVE :                  0 - |
  CODE :                         100 C | *CONSTPI :        3.141592653589793 - |
  CREATEMAZE :                   11E C | *DATE :                   6/30/2016 - |
- DIRECTION :                    DFE - |  DISPLAY :                      F00 - |
- DOOROPEN :                     200 C |  DRAWPLAYERVIEWATDEPTH :        279 C |
-*FALSE :                          0 - | *FULLPMMU :                       1 - |
-*GETPLAYERNEXTCURRENT :         24E C |  GETPLAYERNEXTOFFSET :          250 C |
-*HAS64 :                          1 - | *HASDSP :                         0 - |
-*HASFPU :                         0 - | *HASPMMU :                        0 - |
-*INEXTMODE :                      0 - | *INLWORDMODE :                    0 - |
-*INMAXMODE :                      0 - | *INSRCMODE :                      0 - |
-*INSUPMODE :                      0 - |  INTERRUPT :                    102 C |
-*LISTON :                         1 - | *MACEXP :                         1 - |
- MAIN :                          12 C |  MAP :                          E00 - |
- MAZE_OPEN :                      0 - | *MAZE_PRINCESS :                  1 - |
- MAZE_WALL :                     80 - |  MIRRORDISPLAY :                1E7 C |
-*MOMCPU :                      1802 - | *MOMCPUNAME :                  1802 - |
-*NESTMAX :                      100 - | *PACKING :                        0 - |
-*PADDING :                        1 - |  PLAYER :                       DFF - |
- PLAYERDIRECTIONTABLE :         275 C |  R0 :                             0 - |
+ DELAY :                         7A C |  DIRECTION :                    DF7 - |
+ DISPLAY :                      F00 - |  DOOROPEN :                     200 C |
+ DRAWPLAYERVIEWATDEPTH :        279 C | *FALSE :                          0 - |
+*FULLPMMU :                       1 - | *GETPLAYERNEXTCURRENT :         24E C |
+ GETPLAYERNEXTOFFSET :          250 C | *HAS64 :                          1 - |
+*HASDSP :                         0 - | *HASFPU :                         0 - |
+*HASPMMU :                        0 - | *INEXTMODE :                      0 - |
+*INLWORDMODE :                    0 - | *INMAXMODE :                      0 - |
+*INSRCMODE :                      0 - | *INSUPMODE :                      0 - |
+ INTERRUPT :                    102 C | *LISTON :                         1 - |
+*MACEXP :                         1 - |  MAIN :                          12 C |
+ MAP :                          E00 - |  MAZE_OPEN :                      0 - |
+*MAZE_PRINCESS :                  1 - |  MAZE_WALL :                     80 - |
+ MIRRORDISPLAY :                1E7 C | *MOMCPU :                      1802 - |
+*MOMCPUNAME :                  1802 - | *NESTMAX :                      100 - |
+*PACKING :                        0 - | *PADDING :                        1 - |
+ PLAYER :                       DF8 - |  PLAYERDIRECTIONTABLE :         275 C |
+ PPVECTOR :                     DF9 - |  R0 :                             0 - |
  R1 :                             1 - |  R2 :                             2 - |
  R3 :                             3 - |  R4 :                             4 - |
  R5 :                             5 - |  R6 :                             6 - |
@@ -828,12 +874,12 @@
  RANDOMNUMBER :                 172 C | *RB :                             B - |
  RC :                             C - |  RD :                             D - |
  RE :                             E - |  REFRESH :                      10F C |
-*RELAXED :                        0 - | *REPAINT :                       26 C |
+*RELAXED :                        0 - |  REPAINT :                       26 C |
  REPAINTDISPLAY :               198 C |  RESETPLAYER :                  23E C |
  RETURN :                       100 C |  RF :                             F - |
- STACK :                        DF0 - | *TIME :                    20:27:40 - |
+ STACK :                        DF0 - | *TIME :                    21:07:42 - |
 *TRUE :                           1 - | *VERSION :                     142F - |
- WAIT :                          52 C |  _MDLOOP :                      1ED C |
+ WAIT :                          80 C |  _MDLOOP :                      1ED C |
  _RDCLEAR :                     1A0 C |  _RDDRAWBYTEBLOCKS :            1BB C |
  _RDLOOP :                      1AD C |  _RDNOSOLID :                   1C6 C |
  _RDRESETMASKS :                1A7 C |  __CMFILL :                     125 C |
@@ -841,16 +887,16 @@
  __CMNOTDOWN :                  169 C |  __CMNOTRIGHT :                 157 C |
  __DOLEFTMASK :                 208 C |  __DOMASK :                     20F C |
  __DONOADJUST :                 22D C |  __DONOTRIGHT :                 222 C |
- __DPVDRAWLINE :                2D5 C |  __DPVDRAWWALL :                2CC C |
- __DPVEXIT :                    2E7 C |  __DPVEXITWALL :                2E4 C |
- __DPVNOLEFTWALL :              2AC C |  __DPVNORIGHTWALL :             2B6 C |
- __RNHIGHM1 :                   178 C |  __RNLOWM1 :                    17F C |
- __RNNOTOGGLE :                 18E C |
+ __DPVDRAWLINE :                2D6 C |  __DPVDRAWWALL :                2CD C |
+ __DPVEXIT :                    2E8 C |  __DPVEXITWALL :                2E5 C |
+ __DPVNOLEFTWALL :              2AD C |  __DPVNORIGHTWALL :             2B7 C |
+ __REPAINTEXIT :                 59 C |  __RNHIGHM1 :                   178 C |
+ __RNLOWM1 :                    17F C |  __RNNOTOGGLE :                 18E C |
 
-     93 symbols
-     34 unused symbols
+     96 symbols
+     33 unused symbols
 
- AS V1.42 Beta [Bld 102] - source file game.asm - page 15 - 6/30/2016 20:27:40
+ AS V1.42 Beta [Bld 102] - source file game.asm - page 16 - 6/30/2016 21:07:42
 
 
   defined macros:
@@ -861,7 +907,7 @@ RECALL                                | RETURN
 
       4 macros
 
- AS V1.42 Beta [Bld 102] - source file game.asm - page 16 - 6/30/2016 20:27:40
+ AS V1.42 Beta [Bld 102] - source file game.asm - page 17 - 6/30/2016 21:07:42
 
 
   codepages:
@@ -870,10 +916,10 @@ RECALL                                | RETURN
 STANDARD (0 changed characters)
 
 
-0.02 seconds assembly time
+0.01 seconds assembly time
 
-    603 lines source file
-    756 lines incl. macro expansions
+    633 lines source file
+    798 lines incl. macro expansions
       2 passes
       0 errors
       0 warnings

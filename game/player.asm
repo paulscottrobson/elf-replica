@@ -57,7 +57,8 @@ PlayerDirectionTable:
 ; ************************************************************************************************************
 ; ************************************************************************************************************
 ;
-;		  Draw player view at depth D (0 = outermost, 3 = innermost). Returns DF = 0 if can move forward.
+;		Draw player view at depth D (0 = outermost, 3 = innermost). Returns DF = 0 if can move forward.
+;		D returned unchanged. Store new position at (RC) and increment RC.
 ;		  
 ;	Uses GetPlayerNextOffset (RE/RF) and DoorOpen(RE/RF). Runs in R4.
 ; ************************************************************************************************************
@@ -77,13 +78,14 @@ DrawPlayerViewAtDepth:
 	phi 	r7
 	ldi 	0 																	; look ahead
 	recall 	r5
-	phi 	r8 																	; save next position into R8.1
+	str 	rc 																	; save position at (RC)
 	ldn 	rf 																	; get what's there into R8.0
 	plo 	r8 	
 
 	lri 	rf,Player 															; update the player position from R8.1
-	ghi 	r8
+	ldn 	rc 																	; read read position and update it
 	str 	rf
+	inc 	rc 																	; increment position vector pointer.
 
 	lri 	r5,DoorOpen 														; prepare to show open door.
 	glo 	r7 																	; wall on left side ?
