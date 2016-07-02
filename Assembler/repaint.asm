@@ -58,6 +58,9 @@ __RPFoundPrincess:
 	lri 	rd,DrawSpriteGraphic 												; RD to sprite drawer.
 	glo 	rc 																	; calculate offset in vector
 	smi 	(ppVector & 255)+1
+	bz 		__RPPointBlank 														; at level zero you're dead anyway
+	smi  	1
+__RPPointBlank:
 	shl 																		; x 2, 2 sprites per princess
 	recall 	rd
 	recall 	rd

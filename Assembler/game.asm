@@ -34,8 +34,7 @@ fireTimer = timers+1 															; second timer controls firing
 	nop
 	lri 	r1,Interrupt 														; set interrupt vector
 	lri 	r2,Stack 															; set stack address
-	ldi 	Main & 255 															; switch to R3 as program pointer
-	plo 	r3
+	lri 	r3,Main 															; main program address
 	sep 	r3 																	; go to main routine
 Main:
 	sex 	r2 																	; turn video on
@@ -101,3 +100,4 @@ SpriteData:
 ;	TODO: 	
 ;			Princess movement (for arbitrary placed princess)
 ;			Put princesses in the maze and play the game :)
+; 			Score display.

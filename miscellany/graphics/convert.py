@@ -51,15 +51,15 @@ class Graphic:
 			data.put(pic)
 		data.put(0xFF)
 
-data = GraphicData(8)
+data = GraphicData(6)
 
-for i in range(1,5):
+for i in range(1,4):
 	g = Graphic("princess{0}.png".format(i))
 	g.show()
 	data.define()
-	g.render(data,3,21-i-g.height/2,False)
+	g.render(data,3,33-i*3-g.height,False)
 	data.define()
-	g.render(data,4,21-i-g.height/2,True)
+	g.render(data,4,33-i*3-g.height,True)
 #for i in range(1,5):
 #	g = Graphic("heart{0}.png".format(i))
 #	g.show()
