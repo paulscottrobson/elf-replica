@@ -58,8 +58,18 @@ Main:
 Loop:
 	call 	r4,Repaint
 	call	r4,MovePlayer
-	br 		Loop
 
+	lri 	rf,player 															; get player position
+	ldn 	rf
+	plo 	rf 																	; read the map location
+	ldi 	map/256 
+	phi 	rf
+	ldn 	rf 																	; read the map square
+	bz 		Loop																; if non zero must be a princess.
+	call 	r4,DeathEffect 														; death whiteout effect
+
+wait:
+	br 		wait
 	org 	100h
 
 code:
@@ -87,17 +97,18 @@ code:
 	org 	code+300h
 	include move.asm 															; player move/fire ($A5)
 	include keyboard.asm  														; keyboard driver ($14)
+	include death.asm
 ;
 ;	Block 4
 ;
 	org 	code+400h
-	include heartbeat.asm 														; heartbeat code ($68)
+	include radar.asm 															; radar code ($68)
 
 	org 	code+500h
 SpriteData:	
 	include graphics.inc 														; all the graphic data
 
 ;	TODO: 	
+; 			Score display after death.
 ;			Princess movement (for arbitrary placed princess)
 ;			Put princesses in the maze and play the game :)
-; 			Score display.

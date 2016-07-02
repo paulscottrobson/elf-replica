@@ -66,7 +66,7 @@ __RPPointBlank:
 	recall 	rd
 
 __RPStatus:
-	call 	r5,CalculateHeartbeat 												; calculate / process heartbeat
+	call 	r5,UpdateRadar 														; update the radar.
 
 	ldi 	Screen/256 															; not double buffered ?
 	xri 	Buffer/256
