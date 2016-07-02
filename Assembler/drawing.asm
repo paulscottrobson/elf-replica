@@ -7,8 +7,8 @@
 ; ************************************************************************************************************
 ; ************************************************************************************************************
 
-RepaintDisplay:
-	ldi 	display/256 														; rc points to display position.
+RepaintDisplayOutline:
+	ldi 	Buffer/256 															; rc points to display position.
 	phi 	rc 																	; so does rd as we're going to clear it
 	phi 	rd 																	; the top half of the screen
 	ldi 	0
@@ -109,7 +109,7 @@ _RDNoSolid:
 ; ************************************************************************************************************
 
 MirrorDisplay:	
-	lri 	re,display 															; re points to screen top
+	lri 	re,Buffer 															; re points to screen top
 _MDLoop:
 	glo 	re 																	; set up bottom pointer rf
 	xri 	0F8h
