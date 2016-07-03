@@ -20,6 +20,7 @@ map = 		0D00h 																; this page has the map in it.
 stack = 	0CE8h 																; stack top
 
 timers = 	0CFCh 																; 4 timers must end at page top.
+speed = 	0CFBh 																; princess speed.
 
 ppvector =  0CF4h																; player position vector.
 player = 	0CF3h 																; player offset in map
@@ -29,6 +30,7 @@ kills01 = 	0CF0h
 
 moveTimer = timers 																; first timer controls move/turn.
 fireTimer = timers+1 															; second timer controls firing
+prinTimer = timers+2 															; third timer controls movement
 
 	ret 																		; 1802 interrupts on. 
 	nop
@@ -51,25 +53,20 @@ Main:
 	call 	r4,CreateMaze 														; create the maze
 	call 	r4,ResetPlayer 														; reset the player
 
-	lri 	r4, map+075h
+	lri 	r4, map+075h 														; dummy princess
 	ldi 	1
+	str 	r4
+
+	lri 	r4,speed  															; dummy speed
+	ldi 	60
 	str 	r4
 
 Loop:
 	call 	r4,Repaint
 	call	r4,MovePlayer
+	call 	r4,DeathCheck
+	br 		Loop
 
-	lri 	rf,player 															; get player position
-	ldn 	rf
-	plo 	rf 																	; read the map location
-	ldi 	map/256 
-	phi 	rf
-	ldn 	rf 																	; read the map square
-	bz 		Loop																; if non zero must be a princess.
-	call 	r4,DeathEffect 														; death whiteout effect
-
-wait:
-	br 		wait
 	org 	100h
 
 code:
@@ -96,19 +93,21 @@ code:
 ;
 	org 	code+300h
 	include move.asm 															; player move/fire ($A5)
-	include keyboard.asm  														; keyboard driver ($14)
-	include death.asm
+	include death.asm 															; death check/end ($53)
 ;
 ;	Block 4
 ;
 	org 	code+400h
 	include radar.asm 															; radar code ($68)
+	include keyboard.asm  														; keyboard driver ($14)
+	include character.asm 														; character drawer ($25)
 
 	org 	code+500h
+FontData:
+	include font.inc
 SpriteData:	
 	include graphics.inc 														; all the graphic data
 
 ;	TODO: 	
-; 			Score display after death.
 ;			Princess movement (for arbitrary placed princess)
-;			Put princesses in the maze and play the game :)
+;			Princess spawning.
