@@ -57,13 +57,7 @@ Main:
 ; ************************************************************************************************************
 ; ************************************************************************************************************
 
-	lri 	r4,spawnSpeed
-	ldi 	1*8 																; 1 = 32s 9 = 3s
-	str 	r4
-	inc 	r4
-	ldi 	080h 																; first one part way through.
-	str 	r4
-
+	call 	r4,SkillLevel 														; get the skill level
 	call 	r4,CreateMaze 														; create the maze
 	call 	r4,ResetPlayer 														; reset the player
 	lri 	r4,speed  															; dummy speed
@@ -123,6 +117,7 @@ code:
 ;
 	org 	code+600h
 	include spawning.asm 														; princess spawning code ($80)
+	include skill.asm 															; get skill level ($2D)
 
 	org 	code+700h
 FontData:
@@ -131,5 +126,4 @@ SpriteData:
 	include graphics.inc 														; all the graphic data
 
 ;	TODO: 	
-; 			Skill level selection.
 ;			Princess redirection code (improvement)

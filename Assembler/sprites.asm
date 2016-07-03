@@ -57,7 +57,7 @@ __DSGFinished:
 ClearScreen:
 	lri 	rf,Screen
 __DSGClear:
-	ldi 	0AAh
+	ldi 	0
 	str 	rf
 	inc 	rf
 	glo 	rf
