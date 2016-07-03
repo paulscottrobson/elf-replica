@@ -58,7 +58,7 @@ Main:
 	call 	r4,ResetPlayer 														; reset the player
 
 	lri 	r4, map+075h 														; dummy princess
-	ldi 	1+0*2+3*8
+	ldi 	1+1*2+7*8
 	str 	r4
 
 	lri 	r4,speed  															; dummy speed
@@ -92,7 +92,6 @@ code:
 	org	 	code+200h
 	include repaint.asm 														; repaint ($8B)
 	include sprites.asm 														; sprite drawing ($30)
-	include interrupt.asm														; screen driver ($1E)
 ;
 ; 	Block 3 
 ;
@@ -106,11 +105,13 @@ code:
 	include radar.asm 															; radar code ($68)
 	include keyboard.asm  														; keyboard driver ($14)
 	include character.asm 														; character drawer ($25)
+	include interrupt.asm														; screen driver ($1E)
 ;
 ;	Block 5
 ;
 	org 	code+500h
-	include princess.asm 														; princess moving code.
+	include princess.asm 														; princess moving/simple AI code. ($8A)
+	include compass.asm 														; compass drawing code ($45)
 
 	org 	code+600h
 FontData:
@@ -119,7 +120,6 @@ SpriteData:
 	include graphics.inc 														; all the graphic data
 
 ;	TODO: 	
-;			Princess movement (for arbitrary placed princess), check can move in all four directions.
-;			Princess redirection code.
 ;			Princess spawning.
 ; 			Skill level selection.
+;			Princess redirection code (improvement)

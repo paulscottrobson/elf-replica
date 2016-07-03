@@ -67,7 +67,7 @@ __RPPointBlank:
 
 __RPStatus:
 	call 	r5,UpdateRadar 														; update the radar.
-
+	call 	r5,UpdateCompass
 	ldi 	Screen/256 															; not double buffered ?
 	xri 	Buffer/256
 	bz 		__RepaintNoCopy
