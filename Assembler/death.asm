@@ -34,7 +34,6 @@ Die:
 	dec 	r7 																	; dec counter, loop back if not done
 	ghi 	r7
 	bnz 	Die
-
 	lri 	r5,DrawCharacter 													; code to draw character
 	lri 	rc,screen+8*8+2 													; draw position
 	lri 	rb,kills10  														; score

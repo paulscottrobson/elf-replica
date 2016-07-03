@@ -46,6 +46,20 @@ __DSGFinished:
 	lda 	r2
 	adi 	1
 	return
-
-
 	br 		DrawSpriteGraphic
+
+; ************************************************************************************************************
+;
+;													Clear Screen
+;
+; ************************************************************************************************************
+
+ClearScreen:
+	lri 	rf,Screen
+__DSGClear:
+	ldi 	0AAh
+	str 	rf
+	inc 	rf
+	glo 	rf
+	bnz 	__DSGClear
+	return

@@ -21,16 +21,19 @@ stack = 	0CE8h 																; stack top
 
 timers = 	0CFCh 																; 4 timers must end at page top.
 speed = 	0CFBh 																; princess speed.
+spawnCount = 0CFAh 																; spawning counter
+spawnSpeed = 0CF9h 																; additive to spawn counter.
 
-ppvector =  0CF4h																; player position vector.
-player = 	0CF3h 																; player offset in map
-direction = 0CF2h 																; 0 = right,1 = down, 2 = left, 3 = up
-kills10 =   0CF1h 																; dead princesses.
-kills01 = 	0CF0h
+ppvector =  0CF0h																; player position vector.
+player = 	0CEFh 																; player offset in map
+direction = 0CEEh 																; 0 = right,1 = down, 2 = left, 3 = up
+kills10 =   0CEDh 																; dead princesses.
+kills01 = 	0CECh
 
 moveTimer = timers 																; first timer controls move/turn.
 fireTimer = timers+1 															; second timer controls firing
 prinTimer = timers+2 															; third timer controls movement
+spawnTimer = timers+3 															; fourth timer controls spawning.
 
 MAZE_Wall = 080h 																; bit 7 indicates wall
 MAZE_Open = 000h 																; $00 is open space
@@ -54,18 +57,21 @@ Main:
 ; ************************************************************************************************************
 ; ************************************************************************************************************
 
-	call 	r4,CreateMaze 														; create the maze
-	call 	r4,ResetPlayer 														; reset the player
-
-	lri 	r4, map+075h 														; dummy princess
-	ldi 	1+1*2+7*8
+	lri 	r4,spawnSpeed
+	ldi 	1*8 																; 1 = 32s 9 = 3s
+	str 	r4
+	inc 	r4
+	ldi 	080h 																; first one part way through.
 	str 	r4
 
+	call 	r4,CreateMaze 														; create the maze
+	call 	r4,ResetPlayer 														; reset the player
 	lri 	r4,speed  															; dummy speed
 	ldi 	60
 	str 	r4
 
 Loop:
+	call 	r4,SpawnPrincesses 													; spawn princess, possibly.
 	call 	r4,MovePrincesses 													; move all the princesses
 	call	r4,MovePlayer 														; move player
 	call 	r4,Repaint 															; repaint display
@@ -112,14 +118,18 @@ code:
 	org 	code+500h
 	include princess.asm 														; princess moving/simple AI code. ($8A)
 	include compass.asm 														; compass drawing code ($45)
-
+;
+;	Block 6
+;
 	org 	code+600h
+	include spawning.asm 														; princess spawning code ($80)
+
+	org 	code+700h
 FontData:
 	include font.inc 															; minimal 8x8 font.
 SpriteData:	
 	include graphics.inc 														; all the graphic data
 
 ;	TODO: 	
-;			Princess spawning.
 ; 			Skill level selection.
 ;			Princess redirection code (improvement)
