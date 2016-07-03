@@ -69,7 +69,7 @@ Loop:
 	call 	r4,MovePrincesses 													; move all the princesses
 	call	r4,MovePlayer 														; move player
 	call 	r4,Repaint 															; repaint display
-;	call 	r4,DeathCheck														; check if died
+	call 	r4,DeathCheck														; check if died
 	br 		Loop
 
 	org 	100h

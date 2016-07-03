@@ -9,17 +9,13 @@
 ;	Maze
 ;
 ;	Bit 7 		set for solid wall
-;	Bit 6 		Set if this square has a princess on it post-move*
+;	Bit 6 		Unused
 ;	Bit 5 		Moves left (Bit 2)
 ;	Bit 4 		Moves left (Bit 1)
 ;	Bit 3 		Moves left (Bit 0)
 ;	Bit 2 		Current Direction (High)
 ;	Bit 1 		Current Direction (Low)
-;	Bit 0 		set for princess.
-;
-;	The movement routine uses the map and the buffer, and copies the map to the buffer as it goes. 
-;	Bit 6 on the original map is set when a princess has been moved there, e.g. that square will be occupied
-; 	the next time round. It stops two princesses being moved onto the same square.
+;	Bit 0 		Set for princess.
 ;
 ; ************************************************************************************************************
 ;
@@ -42,61 +38,54 @@ MovePrincesses:
 	glo 		re 																; reset the princess timer
 	str 		rf
 
-	ldi 		map/256 														; point RC to Map
+	ldi 		map/256 														; RC points to map, RD to buffer
 	phi 		rc
-	ldi 		buffer/256 														; point RD to Screen Buffer
-	phi 		rd 																; we use the screen buffer as a target
-	ldi 		0 																; map.
+	ldi 		buffer/256
+	phi 		rd
+	ldi 		0
 	plo 		rc
 	plo 		rd
-
-__MVScanMaze:
-	ldn 		rc 																; read the map and copy to buffer
-	str 		rd 																
-	shl 																		; is there a princess here ?
-	bz			__MVNext 														; if not, go to next square
-	
-	ldn 		rc 																; get princess information.
-	ani 		038h 															; look at count bits.
-	bz 			__MVRedirect 													; if zero work out next move.
-	call 		r5,MoveOnePrincess 												; otherwise move the princess
-	br 			__MVNext
-
-__MVRedirect:
-	call 		r5,PrincessAI 													; work out where to go next.
-__MVNext:
-	inc 		rc 																; next from/to
+__MVCopyBuffer:																	; copy map to buffer.
+	ldn 		rc
+	str 		rd
+	inc 		rc
 	inc 		rd
-	glo 		rd
-	bnz 		__MVScanMaze 													; do all princesses
-
-__MVCopyBack:																	; copy buffer back to map.
-	dec	 		rd
-	dec 		rc
-	ldn 		rd
-	ani 		0BFh 															; clear the target occupied flags.
-	str 		rc
 	glo 		rc
-	bnz 		__MVCopyBack
+	bnz 		__MVCopyBuffer
+
+__MVSearchPrincesses: 															; now work backwards looking for princesses
+	dec 		rc
+	dec 		rd
+	ldn 		rd  															; look at the map copy in the buffer.
+	shl 																		; lose bit 7
+	bz   		__MVNoPrincess 													; if not found , skip to next
+
+	ldn 		rd 																; get the princess data
+	ani 		00111000b 														; isolate the move count bits
+	bz 			__MVNewDirection 												; if zero, we want a new direction
+	call 		r5,MoveOnePrincess												; if not, move princess
+	br 			__MVNoPrincess
+__MVNewDirection:
+	call 		r5,PrincessAI 													; find a new direction	
+__MVNoPrincess:
+	glo 		rc
+	bnz 		__MVSearchPrincesses
 
 __MVExit:
 	return
 
 ; ************************************************************************************************************
 ;
-;			Move princess. RC points to maze entry. RE.1 is player position. RD is the output map
+;			Move princess. RC points to target map. RE.1 is player position. RC.1 is princess position
 ;
 ; ************************************************************************************************************
 
 MoveOnePrincess:
+__MOExit:
 	return
-
-;
-;	Move : look at the target square on the map. If it has a new princess on it, or is block, set count to 0
-;		   if not, change its position. 
-;		   put it on the output map and mark on old map as 'square now occupied'
-;
-;
 
 PrincessAI:
 	br 		PrincessAI
+__PAExit:
+	return
+	
