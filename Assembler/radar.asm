@@ -9,7 +9,7 @@
 ; ************************************************************************************************************
 ; ************************************************************************************************************
 ;
-;			Calculate minimum distance of nearest princess, also clears bit 6 (move processed)
+;							Calculate minimum distance of nearest princess
 ;
 ; ************************************************************************************************************
 ; ************************************************************************************************************
@@ -28,10 +28,6 @@ __RALoop:
 	ldn 	re 																	; read and advance
 	ani 	7Fh 																; is there a princess here
 	bz 		__RANext 															; no, go to next
-
-	ldn 	re 																	; clear bit 6 (has moved) flag
-	ani 	0BFh
-	str 	re
 
 	glo 	re 																	; get princess X
 	ani 	0Fh

@@ -32,6 +32,10 @@ moveTimer = timers 																; first timer controls move/turn.
 fireTimer = timers+1 															; second timer controls firing
 prinTimer = timers+2 															; third timer controls movement
 
+MAZE_Wall = 080h 																; bit 7 indicates wall
+MAZE_Open = 000h 																; $00 is open space
+MAZE_Princess = 001h 															; $01-$7F is princess.
+
 	ret 																		; 1802 interrupts on. 
 	nop
 	lri 	r1,Interrupt 														; set interrupt vector
@@ -54,7 +58,7 @@ Main:
 	call 	r4,ResetPlayer 														; reset the player
 
 	lri 	r4, map+075h 														; dummy princess
-	ldi 	1
+	ldi 	1+0*2+3*8
 	str 	r4
 
 	lri 	r4,speed  															; dummy speed
@@ -62,9 +66,10 @@ Main:
 	str 	r4
 
 Loop:
-	call 	r4,Repaint
-	call	r4,MovePlayer
-	call 	r4,DeathCheck
+	call 	r4,MovePrincesses 													; move all the princesses
+	call	r4,MovePlayer 														; move player
+	call 	r4,Repaint 															; repaint display
+;	call 	r4,DeathCheck														; check if died
 	br 		Loop
 
 	org 	100h
@@ -101,13 +106,20 @@ code:
 	include radar.asm 															; radar code ($68)
 	include keyboard.asm  														; keyboard driver ($14)
 	include character.asm 														; character drawer ($25)
-
+;
+;	Block 5
+;
 	org 	code+500h
+	include princess.asm 														; princess moving code.
+
+	org 	code+600h
 FontData:
-	include font.inc
+	include font.inc 															; minimal 8x8 font.
 SpriteData:	
 	include graphics.inc 														; all the graphic data
 
 ;	TODO: 	
-;			Princess movement (for arbitrary placed princess)
+;			Princess movement (for arbitrary placed princess), check can move in all four directions.
+;			Princess redirection code.
 ;			Princess spawning.
+; 			Skill level selection.

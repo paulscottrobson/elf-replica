@@ -29,7 +29,7 @@
 ;        ...X    
 ;        ....XXXX
 __graphic00:
-    db 033h
+    db 023h
     db 0c0h
     db 011h
     db 0c0h
@@ -80,7 +80,7 @@ __graphic00:
     db 000h
     db 0ffh
 __graphic01:
-    db 034h
+    db 024h
     db 003h
     db 088h
     db 003h
@@ -149,7 +149,7 @@ __graphic01:
 ;        ....X   
 ;        .....XXX
 __graphic02:
-    db 04bh
+    db 033h
     db 0f6h
     db 000h
     db 0e0h
@@ -188,7 +188,7 @@ __graphic02:
     db 000h
     db 0ffh
 __graphic03:
-    db 04ch
+    db 034h
     db 06fh
     db 000h
     db 007h
@@ -237,7 +237,7 @@ __graphic03:
 ;        .....X  
 ;        ......XX
 __graphic04:
-    db 073h
+    db 053h
     db 0f0h
     db 005h
     db 0f0h
@@ -260,7 +260,7 @@ __graphic04:
     db 000h
     db 0ffh
 __graphic05:
-    db 074h
+    db 054h
     db 00fh
     db 0a0h
     db 00fh
